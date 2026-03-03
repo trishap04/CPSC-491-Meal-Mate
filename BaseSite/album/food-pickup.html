@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="shortcut icon" href="../assets/images/mealmate-high-resolution-logo-grayscale-transparent.png" type="image/x-icon" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meal Mate — Pick Up Donated Goods</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+  
+  :root {
+    --cream: #F5F2C8;
+    --warm: #eee9a8;
+    --earth: #2a3260;
+    --leaf: #1B2340;
+    --leaf-light: #2d3a6b;
+    --rust: #1B2340;
+    --rust-light: #2d3a6b;
+    --ink: #1B2340;
+    --muted: #5a6080;
+    --navy: #1B2340;
+    --yellow: #F5F2C8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #f0ecbf;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  header {
+    background: var(--navy);
+    color: var(--yellow);
+    padding: 16px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid rgba(245,242,200,0.2);
+  }
+
+  header .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  header .logo-icon {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  header .logo-icon img {
+    width: 87px;
+    height: 87px;
+    object-fit: cover;
+    object-position: center 15%;
+    margin-left: -18px;
+    margin-top: -4px;
+  }
+
+  header h1 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    color: var(--yellow);
+  }
+
+  header p.tagline {
+    font-size: 0.78rem;
+    color: rgba(245,242,200,0.6);
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+
+  header .stats {
+    display: flex;
+    gap: 28px;
+  }
+
+  header .stat {
+    text-align: right;
+  }
+
+  header .stat span {
+    display: block;
+  }
+
+  header .stat .num {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--yellow);
+  }
+
+  header .stat .label {
+    font-size: 0.72rem;
+    color: rgba(245,242,200,0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .hero-bar {
+    background: var(--yellow);
+    color: var(--navy);
+    text-align: center;
+    padding: 10px;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(27,35,64,0.15);
+  }
+
+  .hero-bar strong { font-weight: 700; }
+
+ main {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  height: calc(100vh - 175px); /* was 130px, add ~45px for the new nav */
+}
+
+  /* MAP */
+  #map {
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  .leaflet-popup-content-wrapper {
+    background: var(--ink);
+    color: var(--cream);
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+
+  .leaflet-popup-tip {
+    background: var(--ink);
+  }
+
+  .leaflet-popup-content {
+    margin: 12px 16px;
+  }
+
+  .popup-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .popup-type {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 2px 8px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+
+  .popup-type.donation { background: #1B2340; color: var(--yellow); }
+  .popup-type.foodbank { background: #2d3a6b; color: var(--yellow); }
+
+  .popup-detail { font-size: 0.82rem; color: #ccc; line-height: 1.5; }
+  .popup-items { font-size: 0.8rem; margin-top: 6px; }
+  .popup-items span {
+    background: rgba(255,255,255,0.1);
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin: 2px;
+    display: inline-block;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    background: #eee9b0;
+    border-left: 2px solid rgba(27,35,64,0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-header {
+    padding: 20px 24px 16px;
+    background: var(--navy);
+    color: var(--yellow);
+    flex-shrink: 0;
+  }
+
+  .sidebar-header h2 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--yellow);
+  }
+
+  .filter-tabs {
+    display: flex;
+    gap: 8px;
+  }
+
+  .filter-tab {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    font-size: 0.78rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    transition: all 0.2s;
+    color: #ccc;
+    background: transparent;
+  }
+
+  .filter-tab.active {
+    background: var(--yellow);
+    border-color: var(--yellow);
+    color: var(--navy);
+  }
+
+  .filter-tab:hover:not(.active) {
+    border-color: rgba(255,255,255,0.5);
+    color: var(--cream);
+  }
+
+  .list-container {
+    overflow-y: auto;
+    flex: 1;
+    padding: 12px;
+  }
+
+  .list-container::-webkit-scrollbar { width: 5px; }
+  .list-container::-webkit-scrollbar-track { background: transparent; }
+  .list-container::-webkit-scrollbar-thumb { background: rgba(27,35,64,0.25); border-radius: 3px; }
+
+  .section-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(27,35,64,0.55);
+    font-weight: 500;
+    margin: 12px 4px 8px;
+  }
+
+  .card {
+    background: white;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    border-left: 4px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    animation: slideIn 0.4s ease backwards;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .card:hover {
+    transform: translateX(-3px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  }
+
+  .card.donation { border-left-color: var(--navy); }
+  .card.foodbank { border-left-color: #4a5580; }
+
+  .card.active-card { box-shadow: 0 0 0 2px var(--navy), 0 4px 16px rgba(0,0,0,0.12); }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .card-name {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    color: var(--navy);
+  }
+
+  .card-badge {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
+
+  .card-badge.donation { background: rgba(27,35,64,0.1); color: var(--navy); }
+  .card-badge.foodbank { background: rgba(27,35,64,0.15); color: #2d3a6b; }
+
+  .card-location {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .card-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .item-tag {
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(27,35,64,0.08);
+    color: var(--navy);
+    border: 1px solid rgba(27,35,64,0.15);
+  }
+
+  .card-footer {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(27,35,64,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-time {
+    font-size: 0.74rem;
+    color: var(--muted);
+  }
+
+  .pickup-btn {
+    background: var(--navy);
+    color: var(--yellow);
+    border: none;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .pickup-btn:hover { background: var(--leaf-light); }
+
+  .card.foodbank .pickup-btn {
+    background: #2d3a6b;
+  }
+
+  .card.foodbank .pickup-btn:hover { background: var(--leaf-light); }
+
+  .partner-tag {
+    font-size: 0.7rem;
+    color: #2d3a6b;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(28,24,16,0.7);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: var(--yellow);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 420px;
+    width: 90%;
+    position: relative;
+    animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.9) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--navy);
+  }
+
+  .modal .modal-location {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+  }
+
+  .modal-section { margin-bottom: 16px; }
+  .modal-section label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .modal-section input, .modal-section select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid rgba(27,35,64,0.25);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    background: white;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .modal-section input:focus, .modal-section select:focus {
+    border-color: var(--navy);
+  }
+
+  .modal-confirm-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--navy);
+    color: var(--yellow);
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 8px;
+  }
+
+  .modal-confirm-btn:hover { background: var(--leaf-light); }
+
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    color: var(--muted);
+    line-height: 1;
+  }
+
+  .success-msg {
+    display: none;
+    text-align: center;
+    padding: 20px 0;
+  }
+
+  .success-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .success-msg h4 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--navy);
+  }
+
+  .success-msg p { color: var(--muted); font-size: 0.88rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo-icon">
+      <img src="../assets/images/mealmate-high-resolution-logo-grayscale-transparent.png" alt="Meal Mate Logo" />
+    <div>
+      <h1>Meal Mate</h1>
+      <p class="tagline">Rescue Food. Empower Communities.</p>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat">
+      <span class="num">142</span>
+      <span class="label">Active Donations</span>
+    </div>
+    <div class="stat">
+      <span class="num">8</span>
+      <span class="label">Partner Banks</span>
+    </div>
+  </div>
+</header>
+
+<div class="hero-bar">
+  📦 New drop-offs available near you — <strong>find goods to pick up today</strong>
+</div>
+<nav style="background: var(--navy); padding: 10px 20px; display: flex; align-items: center;">
+  <a href="index.html" style="color: var(--yellow); text-decoration: none; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 6px;">
+    ← Back
+  </a>
+</nav>
+<main>
+  <div id="map"></div>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>Available Pickups</h2>
+      <div class="filter-tabs">
+        <button class="filter-tab active" onclick="filterCards('all', this)">All</button>
+        <button class="filter-tab" onclick="filterCards('donation', this)">Donations</button>
+        <button class="filter-tab" onclick="filterCards('foodbank', this)">Food Banks</button>
+      </div>
+    </div>
+    <div class="list-container" id="listContainer">
+      <!-- Cards injected by JS -->
+    </div>
+  </div>
+</main>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalContent">
+      <h3 id="modalTitle">Reserve Pickup</h3>
+      <p class="modal-location" id="modalLocation"></p>
+      <div class="modal-section">
+        <label>Your Name</label>
+        <input type="text" placeholder="e.g. Sarah Johnson" id="pickupName"/>
+      </div>
+      <div class="modal-section">
+        <label>Pickup Time</label>
+        <select id="pickupTime">
+          <option>Today — Morning (8am–12pm)</option>
+          <option>Today — Afternoon (12pm–5pm)</option>
+          <option>Today — Evening (5pm–8pm)</option>
+          <option>Tomorrow — Morning (8am–12pm)</option>
+          <option>Tomorrow — Afternoon (12pm–5pm)</option>
+        </select>
+      </div>
+      <div class="modal-section">
+        <label>Items to Pick Up</label>
+        <input type="text" placeholder="e.g. Canned goods, Fresh bread..." id="pickupItems"/>
+      </div>
+      <button class="modal-confirm-btn" onclick="confirmPickup()">Confirm Reservation</button>
+    </div>
+    <div class="success-msg" id="successMsg">
+      <span class="success-icon">✅</span>
+      <h4>You're confirmed!</h4>
+      <p>Your pickup reservation has been submitted. You'll receive a confirmation shortly.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const locations = [
+  {
+    id: 1, type: 'donation',
+    name: "Maria's Kitchen Surplus",
+    address: "342 Oak Street, Downtown",
+    lat: 34.052, lng: -118.243,
+    items: ["Bread", "Canned Soup", "Rice", "Pasta"],
+    donor: "Maria G.",
+    time: "Available until 6pm today"
+  },
+  {
+    id: 2, type: 'donation',
+    name: "Fresh Produce Bundle",
+    address: "87 Maple Ave, Midtown",
+    lat: 34.059, lng: -118.258,
+    items: ["Tomatoes", "Apples", "Lettuce", "Carrots"],
+    donor: "The Nguyen Family",
+    time: "Available until 5pm today"
+  },
+  {
+    id: 3, type: 'foodbank',
+    name: "Harvest Hope Food Bank",
+    address: "210 Elm Boulevard, Eastside",
+    lat: 34.044, lng: -118.228,
+    items: ["Dry Goods", "Canned Foods", "Baby Items", "Hygiene"],
+    partner: "City of LA",
+    time: "Mon–Sat, 9am–4pm"
+  },
+  {
+    id: 4, type: 'donation',
+    name: "Bakery Day-End Goods",
+    address: "554 Pine Street, Westside",
+    lat: 34.062, lng: -118.271,
+    items: ["Sourdough", "Croissants", "Muffins"],
+    donor: "Golden Crust Bakery",
+    time: "Available after 5pm daily"
+  },
+  {
+    id: 5, type: 'foodbank',
+    name: "Community Pantry Network",
+    address: "1001 Rose Ave, Northside",
+    lat: 34.068, lng: -118.238,
+    items: ["Frozen Meals", "Fresh Dairy", "Produce", "Snacks"],
+    partner: "Second Harvest",
+    time: "Tue–Sun, 10am–6pm"
+  },
+  {
+    id: 6, type: 'donation',
+    name: "Sunday Farmer Share",
+    address: "29 Cedar Lane, Riverside",
+    lat: 34.038, lng: -118.256,
+    items: ["Zucchini", "Eggs", "Jam", "Herbs"],
+    donor: "Sunridge Farms",
+    time: "Today only — first come, first served"
+  },
+  {
+    id: 7, type: 'foodbank',
+    name: "Eastside Food Alliance",
+    address: "765 Birch Road, Eastside",
+    lat: 34.047, lng: -118.215,
+    items: ["Grains", "Legumes", "Oil", "Spices"],
+    partner: "Feeding America",
+    time: "Mon, Wed, Fri — 8am–2pm"
+  },
+  {
+    id: 8, type: 'donation',
+    name: "Office Catering Surplus",
+    address: "400 Tech Park Drive, Business District",
+    lat: 34.055, lng: -118.249,
+    items: ["Sandwiches", "Salads", "Fruit Cups", "Drinks"],
+    donor: "Apex Corp Catering",
+    time: "Available today 3pm–7pm"
+  }
+];
+
+let currentFilter = 'all';
+let activeMarkerId = null;
+let markers = {};
+let selectedLocation = null;
+
+// Init map
+const map = L.map('map').setView([34.052, -118.243], 13);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+  maxZoom: 19
+}).addTo(map);
+
+function makeIcon(type, active = false) {
+  const color = type === 'donation' ? (active ? '#1B2340' : '#2d3a6b') : (active ? '#0f1628' : '#3d4e8a');
+  const emoji = type === 'donation' ? '📦' : '🏛️';
+  return L.divIcon({
+    className: '',
+    html: `<div style="
+      background:${color};
+      width:${active?40:34}px;height:${active?40:34}px;
+      border-radius:50% 50% 50% 0;
+      transform:rotate(-45deg);
+      border:3px solid white;
+      box-shadow:0 3px 12px rgba(0,0,0,0.3);
+      display:flex;align-items:center;justify-content:center;
+      transition:all 0.2s;
+    "><span style="transform:rotate(45deg);font-size:${active?16:13}px">${emoji}</span></div>`,
+    iconSize: [active?40:34, active?40:34],
+    iconAnchor: [active?20:17, active?40:34]
+  });
+}
+
+locations.forEach(loc => {
+  const marker = L.marker([loc.lat, loc.lng], { icon: makeIcon(loc.type) }).addTo(map);
+  marker.bindPopup(`
+    <div class="popup-title">${loc.name}</div>
+    <span class="popup-type ${loc.type}">${loc.type === 'donation' ? 'Donation Drop' : 'Partner Food Bank'}</span>
+    <div class="popup-detail">📍 ${loc.address}</div>
+    <div class="popup-detail">🕐 ${loc.time}</div>
+    <div class="popup-items">${loc.items.map(i=>`<span>${i}</span>`).join('')}</div>
+  `, { maxWidth: 260 });
+
+  marker.on('click', () => {
+    highlightCard(loc.id);
+    setActiveMarker(loc.id);
+  });
+
+  markers[loc.id] = { marker, loc };
+});
+
+function setActiveMarker(id) {
+  if (activeMarkerId && markers[activeMarkerId]) {
+    markers[activeMarkerId].marker.setIcon(makeIcon(markers[activeMarkerId].loc.type, false));
+  }
+  activeMarkerId = id;
+  markers[id].marker.setIcon(makeIcon(markers[id].loc.type, true));
+}
+
+function renderCards(filter) {
+  const container = document.getElementById('listContainer');
+  container.innerHTML = '';
+
+  const donations = locations.filter(l => l.type === 'donation' && (filter === 'all' || filter === 'donation'));
+  const foodbanks = locations.filter(l => l.type === 'foodbank' && (filter === 'all' || filter === 'foodbank'));
+
+  if (donations.length) {
+    const label = document.createElement('div');
+    label.className = 'section-label';
+    label.textContent = '🤝 Community Donations';
+    container.appendChild(label);
+    donations.forEach((loc, i) => container.appendChild(makeCard(loc, i)));
+  }
+
+  if (foodbanks.length) {
+    const label = document.createElement('div');
+    label.className = 'section-label';
+    label.textContent = '🏛️ Partner Food Banks';
+    container.appendChild(label);
+    foodbanks.forEach((loc, i) => container.appendChild(makeCard(loc, i + donations.length)));
+  }
+}
+
+function makeCard(loc, index) {
+  const card = document.createElement('div');
+  card.className = `card ${loc.type}`;
+  card.id = `card-${loc.id}`;
+  card.style.animationDelay = `${index * 0.06}s`;
+
+  card.innerHTML = `
+    <div class="card-top">
+      <div class="card-name">${loc.name}</div>
+      <span class="card-badge ${loc.type}">${loc.type === 'donation' ? 'Donation' : 'Food Bank'}</span>
+    </div>
+    <div class="card-location">📍 ${loc.address}</div>
+    <div class="card-items">${loc.items.map(i=>`<span class="item-tag">${i}</span>`).join('')}</div>
+    <div class="card-footer">
+      <div>
+        <div class="card-time">🕐 ${loc.time}</div>
+        ${loc.type === 'foodbank' ? `<div class="partner-tag">🤝 Partner: ${loc.partner}</div>` : `<div class="card-time" style="color:#2d3a6b">👤 ${loc.donor}</div>`}
+      </div>
+      <button class="pickup-btn" onclick="openModal(${loc.id}, event)">Reserve Pickup</button>
+    </div>
+  `;
+
+  card.addEventListener('click', (e) => {
+    if (e.target.classList.contains('pickup-btn')) return;
+    setActiveMarker(loc.id);
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('active-card'));
+    card.classList.add('active-card');
+    map.flyTo([loc.lat, loc.lng], 15, { duration: 1 });
+    markers[loc.id].marker.openPopup();
+  });
+
+  return card;
+}
+
+function highlightCard(id) {
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active-card'));
+  const card = document.getElementById(`card-${id}`);
+  if (card) {
+    card.classList.add('active-card');
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+function filterCards(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards(filter);
+}
+
+function openModal(id, e) {
+  e.stopPropagation();
+  selectedLocation = locations.find(l => l.id === id);
+  document.getElementById('modalTitle').textContent = `Reserve Pickup — ${selectedLocation.name}`;
+  document.getElementById('modalLocation').textContent = `📍 ${selectedLocation.address}`;
+  document.getElementById('pickupItems').value = selectedLocation.items.slice(0, 2).join(', ');
+  document.getElementById('modalContent').style.display = '';
+  document.getElementById('successMsg').style.display = 'none';
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+
+function confirmPickup() {
+  const name = document.getElementById('pickupName').value.trim();
+  if (!name) { document.getElementById('pickupName').style.borderColor = 'var(--rust)'; return; }
+  document.getElementById('modalContent').style.display = 'none';
+  document.getElementById('successMsg').style.display = 'block';
+  setTimeout(closeModal, 2800);
+}
+
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+});
+
+renderCards('all');
+</script>
+</body>
+</html>
