@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Donation Directory</title>
+<link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/album/" />
+<script src="../assets/js/color-modes.js"></script>
+<link href="../assets/dist/css/bootstrap.min.css" rel="stylesheet" />
+<meta name="theme-color" content="#712cf9" />
+
+<style>
+
+body{
+font-family: Arial;
+background:#212529;
+margin:40px;
+}
+
+h1{
+text-align:center;
+}
+
+.directory{
+max-width:800px;
+margin:auto;
+}
+
+.site{
+background:rgb(32, 32, 32);
+padding:15px;
+margin-bottom:15px;
+border-radius:8px;
+box-shadow:0 0 5px rgba(0,0,0,0.1);
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Donation Site Directory</h1>
+
+<a href="index.html" class="btn btn-primary my-2">Back</a>
+
+<div class="directory" id="directory"></div>
+
+<script src="donation-directory.js"></script>
+
+<script>
+
+const container = document.getElementById("directory");
+
+donationDirectory.forEach(site => {
+
+const div = document.createElement("div");
+div.className = "site";
+
+div.innerHTML = `
+<h3>${site.name}</h3>
+<p><strong>Address:</strong> ${site.address}, ${site.city}, ${site.state} ${site.zip}</p>
+<p><strong>Phone:</strong> ${site.phone}</p>
+<p><strong>Hours:</strong> ${site.hours}</p>
+<p><strong>Accepted Items:</strong> ${site.acceptedItems}</p>
+<p><strong>Notes:</strong> ${site.notes}</p>
+`;
+
+container.appendChild(div);
+
+});
+
+</script>
+
+</body>
+</html>
