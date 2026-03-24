@@ -677,11 +677,42 @@ let markers = {};
 let selectedLocation = null;
 
 // Init map
-const map = L.map('map').setView([34.052, -118.243], 13);
+const defaultLat = 34.052;
+const defaultLng = -118.243;
+
+const map = L.map('map').setView([defaultLat, defaultLng], 13);
+
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
   attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
   maxZoom: 19
 }).addTo(map);
+
+let userMarker = null;
+
+function setUserLocation(lat, lng) {
+  map.setView([lat, lng], 13);
+
+  if (userMarker) {
+    map.removeLayer(userMarker);
+  }
+
+  userMarker = L.marker([lat, lng]).addTo(map);
+  userMarker.bindPopup("You are here").openPopup();
+}
+
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(
+    function(position) {
+      const userLat = position.coords.latitude;
+      const userLng = position.coords.longitude;
+      setUserLocation(userLat, userLng);
+    },
+    function(error) {
+      console.log("Could not get location");
+      map.setView([defaultLat, defaultLng], 13);
+    }
+  );
+}
 
 function makeIcon(type, active = false) {
   const color = type === 'donation' ? (active ? '#1B2340' : '#2d3a6b') : (active ? '#0f1628' : '#3d4e8a');
