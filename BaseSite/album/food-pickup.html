@@ -697,7 +697,7 @@ function setUserLocation(lat, lng) {
   }
 
   userMarker = L.marker([lat, lng]).addTo(map);
-  userMarker.bindPopup("You are here").openPopup();
+  userMarker.bindPopup("Your current location").openPopup();
 }
 
 if (navigator.geolocation) {
@@ -742,7 +742,10 @@ locations.forEach(loc => {
     <p style="margin: 4px 0;"><strong>Address:</strong> ${loc.address}</p>
     <p style="margin: 4px 0;"><strong>Hours:</strong> ${loc.hours || loc.time}</p>
     <p style="margin: 4px 0;"><strong>Contact:</strong> ${loc.contact || loc.donor}</p>
-    <p style="margin: 4px 0;"><strong>Items:</strong> ${loc.items.join(", ")}</p>
+    <p style="margin: 4px 0;"><strong>Available Items:</strong></p>
+<ul style="margin: 4px 0; padding-left: 18px;">
+  ${loc.items.map(item => `<li>${item}</li>`).join("")}
+</ul>
   </div>
 `, { maxWidth: 260 });
 
