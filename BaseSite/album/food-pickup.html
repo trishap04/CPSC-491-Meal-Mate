@@ -149,7 +149,7 @@
       transform: translateY(-50%);
       cursor: pointer;
       font-size: 1.1rem;
-      color: rgba(27,35,64,0.6);
+      color: rgba(27, 35, 64, 0.6);
       transition: color 0.2s;
     }
 
@@ -642,7 +642,8 @@
 
   <div class="hero-bar" id="heroBanner">
     <a href="#listContainer" style="color: inherit; text-decoration: none; cursor: pointer;">
-      📦 New drop-offs available near you — <strong style="text-decoration: underline;">find goods to pick up today</strong>
+      📦 New drop-offs available near you — <strong style="text-decoration: underline;">find goods to pick up
+        today</strong>
     </a>
     <span class="hero-close" onclick="document.getElementById('heroBanner').style.display='none'">✕</span>
   </div>
@@ -811,12 +812,12 @@
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        function(position) {
+        function (position) {
           const userLat = position.coords.latitude;
           const userLng = position.coords.longitude;
           setUserLocation(userLat, userLng);
         },
-        function(error) {
+        function (error) {
           console.log("Could not get location");
           map.setView([defaultLat, defaultLng], 13);
         }
