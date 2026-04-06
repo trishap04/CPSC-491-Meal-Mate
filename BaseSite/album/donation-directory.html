@@ -1,61 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors" />
+  <link rel="shortcut icon" href="../assets/images/mealmate-high-resolution-logo-grayscale-transparent.png"
+    type="image/x-icon" />
+  <meta name="generator" content="Astro v5.13.2" />
   <title>Donation Directory</title>
+  <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/album/" />
+  <script src="../assets/js/color-modes.js"></script>
+  <link href="../assets/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <meta name="theme-color" content="#712cf9" />
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <style>
     body {
-      font-family: Arial;
-      background:#111;
-      color:white;
-      text-align:center;
-      padding:20px;
+      font-family: Arial, sans-serif;
+      background: #212529;
+      color: white;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .controls {
+      max-width: 1000px;
+      margin: 0 auto 20px auto;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
     }
 
     input {
-      padding:12px;
-      width:300px;
-      border-radius:6px;
-      border:none;
-      margin-right:10px;
+      width: 340px;
+      max-width: 90%;
+      padding: 12px;
+      border-radius: 6px;
+      border: none;
+      font-size: 16px;
     }
 
     button {
-      padding:12px;
-      background:#2e7d32;
-      color:white;
-      border:none;
-      border-radius:6px;
-      cursor:pointer;
+      padding: 12px 16px;
+      background: #0d6efd;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background: #07306e;
+    }
+
+    #status {
+      max-width: 1000px;
+      margin: 0 auto 15px auto;
+      text-align: left;
+      color: #ddd;
+    }
+
+    #map {
+      max-width: 1000px;
+      height: 420px;
+      margin: 0 auto 20px auto;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    #directory {
+      max-width: 1000px;
+      margin: 0 auto;
+      text-align: left;
     }
 
     .site {
-      background:#202020;
-      padding:15px;
-      margin:15px auto;
-      max-width:800px;
-      border-radius:10px;
-      text-align:left;
+      background: #2b3035;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     }
 
-    a { color:#8fd3ff; }
+    .site h3 {
+      margin-top: 0;
+      color: #0d6efd;
+    }
+
+    .site p {
+      margin: 6px 0;
+      color: #f1f1f1;
+    }
+
+    .site a {
+      color: #8fd3ff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .site a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
-
 <body>
+  <h1>Donation Site Directory</h1>
 
-<h1>Donation Directory</h1>
+  <div class="controls">
+    <input id="addressInput" type="text" placeholder="Enter your address" />
+    <button onclick="findClosestPlace()">Find Closest</button>
+    <button onclick="history.back()">⬅ Back</button>
+  </div>
 
-<input id="addressInput" type="text" placeholder="Enter your address">
-<button onclick="findClosestPlace()">Find Closest</button>
+  <div id="status">Loading donation sites...</div>
+  <div id="map"></div>
+  <div id="directory"></div>
 
-<div id="status"></div>
-<div id="directory"></div>
-
-<script src="donation-directory.js"></script>
-
+  <script src="donation-directory.js"></script>
 </body>
 </html>
