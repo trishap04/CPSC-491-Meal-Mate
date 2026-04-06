@@ -1,74 +1,61 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Donation Directory</title>
-<link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/album/" />
-<script src="../assets/js/color-modes.js"></script>
-<link href="../assets/dist/css/bootstrap.min.css" rel="stylesheet" />
-<meta name="theme-color" content="#712cf9" />
+  <meta charset="UTF-8">
+  <title>Donation Directory</title>
 
-<style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
-body{
-font-family: Arial;
-background:#212529;
-margin:40px;
-}
+  <style>
+    body {
+      font-family: Arial;
+      background:#111;
+      color:white;
+      text-align:center;
+      padding:20px;
+    }
 
-h1{
-text-align:center;
-}
+    input {
+      padding:12px;
+      width:300px;
+      border-radius:6px;
+      border:none;
+      margin-right:10px;
+    }
 
-.directory{
-max-width:800px;
-margin:auto;
-}
+    button {
+      padding:12px;
+      background:#2e7d32;
+      color:white;
+      border:none;
+      border-radius:6px;
+      cursor:pointer;
+    }
 
-.site{
-background:rgb(32, 32, 32);
-padding:15px;
-margin-bottom:15px;
-border-radius:8px;
-box-shadow:0 0 5px rgba(0,0,0,0.1);
-}
+    .site {
+      background:#202020;
+      padding:15px;
+      margin:15px auto;
+      max-width:800px;
+      border-radius:10px;
+      text-align:left;
+    }
 
-</style>
-
+    a { color:#8fd3ff; }
+  </style>
 </head>
 
 <body>
 
-<h1>Donation Site Directory</h1>
+<h1>Donation Directory</h1>
 
-<a href="index.html" class="btn btn-primary my-2">Back</a>
+<input id="addressInput" type="text" placeholder="Enter your address">
+<button onclick="findClosestPlace()">Find Closest</button>
 
-<div class="directory" id="directory"></div>
+<div id="status"></div>
+<div id="directory"></div>
 
 <script src="donation-directory.js"></script>
-
-<script>
-
-const container = document.getElementById("directory");
-
-donationDirectory.forEach(site => {
-
-const div = document.createElement("div");
-div.className = "site";
-
-div.innerHTML = `
-<h3>${site.name}</h3>
-<p><strong>Address:</strong> ${site.address}, ${site.city}, ${site.state} ${site.zip}</p>
-<p><strong>Phone:</strong> ${site.phone}</p>
-<p><strong>Hours:</strong> ${site.hours}</p>
-<p><strong>Accepted Items:</strong> ${site.acceptedItems}</p>
-<p><strong>Notes:</strong> ${site.notes}</p>
-`;
-
-container.appendChild(div);
-
-});
-
-</script>
 
 </body>
 </html>
