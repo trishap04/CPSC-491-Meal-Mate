@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Donation Confirmation" />
+  <meta name="author" content="Meal Mate" />
+  <link rel="shortcut icon" href="../assets/images/mealmate-high-resolution-logo-grayscale-transparent.png"
+    type="image/x-icon" />
+  <title>Donation Confirmed - Meal Mate</title>
+  <script src="../assets/js/color-modes.js"></script>
+  <link href="../assets/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <meta name="theme-color" content="#712cf9" />
+  <link href="checkout.css" rel="stylesheet" />
+  <style>
+    .confirmation-header {
+      background: linear-gradient(135deg, #712cf9 0%, #6528e0 100%);
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+      margin-bottom: 30px;
+      border-radius: 8px;
+    }
+
+    .confirmation-header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .confirmation-header .checkmark {
+      font-size: 4rem;
+      margin-bottom: 10px;
+      animation: bounceIn 0.6s ease;
+    }
+
+    @keyframes bounceIn {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .summary-section {
+      background-color: #f8f9fa;
+      border-left: 4px solid #712cf9;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+
+    .summary-section h5 {
+      color: #712cf9;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    .donation-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .donation-item:last-child {
+      border-bottom: none;
+    }
+
+    .donation-item-name {
+      font-weight: 500;
+    }
+
+    .donation-item-quantity {
+      background-color: #e7f3ff;
+      color: #004085;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .donation-id {
+      background-color: #fff3cd;
+      border: 1px solid #ffc107;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+    }
+
+    .donation-id strong {
+      color: #856404;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .action-buttons .btn {
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      font-weight: 600;
+      color: #495057;
+    }
+
+    .detail-value {
+      color: #212529;
+    }
+
+    @media print {
+      .no-print { display: none !important; }
+      .confirmation-header { page-break-after: avoid; }
+    }
+  </style>
+</head>
+
+<body class="bg-body-tertiary">
+  <nav style="background: #1B2340; padding: 10px 20px; display: flex; align-items: center;">
+    <a href="index.html"
+      style="color: #F5F2C8; text-decoration: none; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 6px;">
+      ← Back to Home
+    </a>
+  </nav>
+
+  <div class="container" style="max-width: 700px; margin-top: 30px; margin-bottom: 30px;">
+    <!-- Confirmation Header -->
+    <div class="confirmation-header no-print">
+      <div class="checkmark">✓</div>
+      <h1>Thank You!</h1>
+      <p class="lead mb-0">Your donation has been successfully recorded</p>
+    </div>
+
+    <main>
+      <!-- Donation ID -->
+      <div class="donation-id" id="donationIdSection">
+        <strong>Donation ID:</strong> <span id="donationId">#00000</span>
+        <br />
+        <small class="text-muted" id="donationDate">Date: Loading...</small>
+      </div>
+
+      <!-- Donated Items Summary -->
+      <div class="summary-section">
+        <h5>📦 Items You're Donating</h5>
+        <div id="donatedItems">
+          <p class="text-muted">Loading items...</p>
+        </div>
+      </div>
+
+      <!-- Pickup Details -->
+      <div class="summary-section">
+        <h5>📅 Pickup Schedule</h5>
+        <div id="pickupDetails">
+          <p class="text-muted">Loading details...</p>
+        </div>
+      </div>
+
+      <!-- Donor Information -->
+      <div class="summary-section">
+        <h5>👤 Your Information</h5>
+        <div id="donorDetails">
+          <p class="text-muted">Loading information...</p>
+        </div>
+      </div>
+
+      <!-- Additional Information -->
+      <div class="alert alert-info" role="alert">
+        <strong>What happens next?</strong>
+        <ul class="mb-0 mt-2">
+          <li>Your donation has been added to our network</li>
+          <li>We will coordinate pickup at your selected time</li>
+          <li>You may receive a confirmation email shortly</li>
+          <li>Thank you for helping those in need!</li>
+        </ul>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons no-print">
+        <button class="btn btn-outline-primary" onclick="window.print()">🖨️ Print</button>
+        <a href="index.html" class="btn btn-primary">Back to Home</a>
+      </div>
+    </main>
+
+    <footer class="my-5 pt-5 text-body-secondary text-center text-small">
+      <p class="mb-1">&copy; 2026 Meal Mate</p>
+      <ul class="list-inline">
+        <li class="list-inline-item"><a href="#">Privacy</a></li>
+        <li class="list-inline-item"><a href="#">Terms</a></li>
+        <li class="list-inline-item"><a href="#">Support</a></li>
+      </ul>
+    </footer>
+  </div>
+
+  <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Get donation data from session storage or API
+    document.addEventListener('DOMContentLoaded', async function() {
+      const params = new URLSearchParams(window.location.search);
+      const donationId = params.get('id');
+
+      // Try to get data from session storage first
+      let donationData = sessionStorage.getItem('lastDonationData');
+      
+      if (donationData) {
+        donationData = JSON.parse(donationData);
+        displayDonation(donationData);
+      } else if (donationId) {
+        // Fallback: fetch from API
+        try {
+          const response = await fetch(`http://localhost:8000/api/users/api/donations/${donationId}/`);
+          if (response.ok) {
+            donationData = await response.json();
+            displayDonation(donationData);
+          } else {
+            showError('Could not load donation details');
+          }
+        } catch (error) {
+          console.error('Error loading donation:', error);
+          showError('Error loading donation details');
+        }
+      } else {
+        showError('No donation ID provided');
+      }
+    });
+
+    function displayDonation(data) {
+      // Donation ID
+      document.getElementById('donationId').textContent = '#' + String(data.id).padStart(5, '0');
+      
+      // Date
+      if (data.created_at) {
+        const date = new Date(data.created_at);
+        document.getElementById('donationDate').textContent = 
+          'Date: ' + date.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+      }
+
+      // Donated Items
+      if (data.items && data.items.length > 0) {
+        document.getElementById('donatedItems').innerHTML = data.items.map(item => `
+          <div class="donation-item">
+            <div class="donation-item-name">${escapeHtml(item.food.name)}</div>
+            <div class="donation-item-quantity">${item.quantity} ${item.unit}</div>
+          </div>
+        `).join('');
+      } else {
+        document.getElementById('donatedItems').innerHTML = '<p class="text-muted">No items recorded</p>';
+      }
+
+      // Pickup Details
+      const prefText = {
+        'meet': '👤 Meet at door',
+        'leave': '🚪 Leave at door'
+      };
+
+      document.getElementById('pickupDetails').innerHTML = `
+        <div class="detail-row">
+          <span class="detail-label">Date:</span>
+          <span class="detail-value">${formatDate(data.pickup_date)}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Time:</span>
+          <span class="detail-value">${escapeHtml(data.pickup_time)}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Preference:</span>
+          <span class="detail-value">${prefText[data.door_preference] || data.door_preference}</span>
+        </div>
+      `;
+
+      // Donor Details
+      document.getElementById('donorDetails').innerHTML = `
+        <div class="detail-row">
+          <span class="detail-label">Name:</span>
+          <span class="detail-value">${escapeHtml(data.first_name)} ${escapeHtml(data.last_name)}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Email:</span>
+          <span class="detail-value">${escapeHtml(data.email)}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Phone:</span>
+          <span class="detail-value">${escapeHtml(data.phone)}</span>
+        </div>
+      `;
+    }
+
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric'
+      });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function showError(message) {
+      document.querySelector('main').innerHTML = `
+        <div class="alert alert-danger" role="alert">
+          <h4 class="alert-heading">⚠️ Error</h4>
+          <p>${message}</p>
+          <hr>
+          <p class="mb-0"><a href="index.html" class="btn btn-primary">Return to Home</a></p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+
+</html>

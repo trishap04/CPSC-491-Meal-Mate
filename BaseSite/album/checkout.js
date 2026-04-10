@@ -42,6 +42,15 @@ function setupEventListeners() {
   
   if (donorForm) {
     donorForm.addEventListener('submit', handleFormSubmit);
+    
+    // Add change listeners to form fields for summary update
+    document.getElementById('firstName').addEventListener('change', updateDonationSummary);
+    document.getElementById('lastName').addEventListener('change', updateDonationSummary);
+    document.getElementById('pickupDate').addEventListener('change', updateDonationSummary);
+    document.getElementById('pickupTime').addEventListener('change', updateDonationSummary);
+    document.querySelectorAll('input[name="doorPreference"]').forEach(radio => {
+      radio.addEventListener('change', updateDonationSummary);
+    });
   }
 }
 
@@ -250,6 +259,67 @@ function updateUnit(foodId, unit) {
     item.unit = unit;
   }
   updateCartUI();
+  updateDonationSummary();
+}
+
+// Update donation summary display
+function updateDonationSummary() {
+  const summary = document.getElementById('donationSummary');
+  const summaryItems = document.getElementById('summaryItems');
+  const summaryDate = document.getElementById('summaryDate');
+  const summaryTime = document.getElementById('summaryTime');
+  const summaryDonor = document.getElementById('summaryDonor');
+  const summaryPreference = document.getElementById('summaryPreference');
+  
+  // Show summary only if there are items in cart
+  if (cart.length > 0) {
+    summary.style.display = 'block';
+    
+    // Update items list
+    summaryItems.innerHTML = cart.map(item => `
+      <li class="list-group-item bg-light">
+        <strong>${escapeHtml(item.name)}</strong><br>
+        <small class="text-muted">${item.quantity} ${item.unit}</small>
+      </li>
+    `).join('');
+  } else {
+    summary.style.display = 'none';
+    return;
+  }
+  
+  // Update pickup details
+  const firstName = document.getElementById('firstName').value.trim();
+  const lastName = document.getElementById('lastName').value.trim();
+  const pickupDate = document.getElementById('pickupDate').value;
+  const pickupTime = document.getElementById('pickupTime').value;
+  const doorPref = document.querySelector('input[name="doorPreference"]:checked');
+  
+  // Format date
+  if (pickupDate) {
+    const date = new Date(pickupDate);
+    summaryDate.textContent = date.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  } else {
+    summaryDate.textContent = 'Not selected';
+  }
+  
+  // Set time
+  summaryTime.textContent = pickupTime || 'Not selected';
+  
+  // Set donor name
+  const donorName = (firstName && lastName) ? `${firstName} ${lastName}` : 'Not entered';
+  summaryDonor.textContent = donorName;
+  
+  // Set preference
+  const prefText = {
+    'meet': '👤 Meet at door',
+    'leave': '🚪 Leave at door'
+  };
+  summaryPreference.textContent = doorPref ? prefText[doorPref.value] : 'Not selected';
 }
 
 // Update cart UI
@@ -315,6 +385,9 @@ function updateCartUI() {
       </div>
     </li>
   `}).join('');
+  
+  // Update summary display
+  updateDonationSummary();
 }
 
 // Handle form submission
@@ -377,10 +450,13 @@ async function submitDonation(donationData) {
     
     const result = await response.json();
     console.log('Donation created:', result);
-    alert('Thank you for your donation! Your donation has been recorded.');
     
-    // Optionally redirect to confirmation page
-    // window.location.href = 'donation-confirmation.html?id=' + result.id;
+    // Save full donation data to session for confirmation page
+    sessionStorage.setItem('lastDonationId', result.id);
+    sessionStorage.setItem('lastDonationData', JSON.stringify(result));
+    
+    // Redirect to confirmation page
+    window.location.href = 'donation-confirmation.html?id=' + result.id;
   } catch (error) {
     console.error('Error submitting donation:', error);
     alert('Error submitting donation: ' + error.message);
