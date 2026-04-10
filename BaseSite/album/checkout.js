@@ -1,17 +1,34 @@
 // Configuration
 const API_BASE_URL = 'http://localhost:8000/api/users';
 
+// Unit options for different categories
+const UNIT_OPTIONS = {
+  'meat': ['lbs', 'oz', 'pieces', 'items'],
+  'canned': ['cans', 'items'],
+  'bread': ['loaves', 'packages', 'items'],
+  'veggies': ['lbs', 'oz', 'bunches', 'pieces', 'items']
+};
+
+const DEFAULT_UNITS = {
+  'meat': 'lbs',
+  'canned': 'cans',
+  'bread': 'loaves',
+  'veggies': 'lbs'
+};
+
 // State management
 let cart = [];
 let selectedCategory = null;
 let allFoods = [];
 let categoriesData = [];
+let pendingAddFood = null; // Track which food is being added
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function() {
   loadCategories();
   loadFoodsForCategory('meat');
   setupEventListeners();
+  createQuantityModal();
 });
 
 // Setup event listeners
@@ -148,7 +165,7 @@ function renderFoodList(foods) {
       </div>
       <button 
         class="btn btn-sm btn-success ms-2"
-        onclick="addToCart(${food.id}, '${escapeHtml(food.name)}')">
+        onclick="addToCart(${food.id}, '${escapeHtml(food.name)}', '${food.category}')">
         Add
       </button>
     </li>
@@ -156,21 +173,59 @@ function renderFoodList(foods) {
 }
 
 // Add item to cart
-function addToCart(foodId, foodName) {
-  const existingItem = cart.find(item => item.food_id === foodId);
+function addToCart(foodId, foodName, foodCategory = 'items') {
+  // Store pending food and show modal
+  pendingAddFood = {
+    food_id: foodId,
+    name: foodName,
+    category: foodCategory
+  };
+  
+  // Set unit options based on category
+  const unitOptions = UNIT_OPTIONS[foodCategory] || ['items'];
+  const defaultUnit = DEFAULT_UNITS[foodCategory] || 'items';
+  
+  // Populate unit dropdown
+  const unitSelect = document.getElementById('quantityModalUnit');
+  unitSelect.innerHTML = unitOptions.map(unit => 
+    `<option value="${unit}" ${unit === defaultUnit ? 'selected' : ''}>${unit}</option>`
+  ).join('');
+  
+  // Reset quantity to 1
+  document.getElementById('quantityModalQuantity').value = 1;
+  
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById('quantityModal'));
+  modal.show();
+}
+
+// Confirm and add to cart with quantity
+function confirmAddToCart() {
+  if (!pendingAddFood) return;
+  
+  const quantity = parseInt(document.getElementById('quantityModalQuantity').value) || 1;
+  const unit = document.getElementById('quantityModalUnit').value || 'items';
+  
+  const existingItem = cart.find(item => item.food_id === pendingAddFood.food_id);
   
   if (existingItem) {
-    existingItem.quantity += 1;
+    existingItem.quantity += quantity;
   } else {
     cart.push({
-      food_id: foodId,
-      name: foodName,
-      quantity: 1,
-      unit: 'items'
+      food_id: pendingAddFood.food_id,
+      name: pendingAddFood.name,
+      quantity: quantity,
+      unit: unit
     });
   }
   
   updateCartUI();
+  
+  // Close modal
+  const modal = bootstrap.Modal.getInstance(document.getElementById('quantityModal'));
+  modal.hide();
+  
+  pendingAddFood = null;
 }
 
 // Remove item from cart
@@ -184,6 +239,15 @@ function updateQuantity(foodId, quantity) {
   const item = cart.find(item => item.food_id === foodId);
   if (item) {
     item.quantity = Math.max(1, parseInt(quantity) || 1);
+  }
+  updateCartUI();
+}
+
+// Update unit
+function updateUnit(foodId, unit) {
+  const item = cart.find(item => item.food_id === foodId);
+  if (item) {
+    item.unit = unit;
   }
   updateCartUI();
 }
@@ -202,28 +266,51 @@ function updateCartUI() {
     return;
   }
   
-  cartItems.innerHTML = cart.map(item => `
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-      <div style="flex: 1;">
-        <h6 class="my-0">${escapeHtml(item.name)}</h6>
-        <small class="text-body-secondary">
+  cartItems.innerHTML = cart.map(item => {
+    // Get unit options for this category (we'll use common units if category unknown)
+    const allUnits = ['items', 'lbs', 'oz', 'cans', 'loaves', 'packages', 'bunches', 'pieces'];
+    
+    return `
+    <li class="list-group-item">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <div style="flex: 1;">
+          <h6 class="my-0">${escapeHtml(item.name)}</h6>
+        </div>
+        <button 
+          class="btn btn-sm btn-danger ms-2"
+          onclick="removeFromCart(${item.food_id})">
+          Remove
+        </button>
+      </div>
+      <div class="row g-2 align-items-center mt-2">
+        <div class="col-auto">
+          <label class="form-label mb-0 small">Quantity:</label>
           <input 
             type="number" 
             min="1" 
             value="${item.quantity}" 
-            style="width: 50px;"
             onchange="updateQuantity(${item.food_id}, this.value)"
             class="form-control form-control-sm"
+            style="width: 80px;"
           />
-        </small>
+        </div>
+        <div class="col-auto">
+          <label class="form-label mb-0 small">Unit:</label>
+          <select 
+            class="form-select form-select-sm"
+            onchange="updateUnit(${item.food_id}, this.value)"
+            style="width: 110px;">
+            ${allUnits.map(unit => 
+              `<option value="${unit}" ${unit === item.unit ? 'selected' : ''}>${unit}</option>`
+            ).join('')}
+          </select>
+        </div>
+        <div class="col-auto mt-4">
+          <span class="badge bg-info text-dark ms-2">${item.quantity} ${item.unit}</span>
+        </div>
       </div>
-      <button 
-        class="btn btn-sm btn-danger"
-        onclick="removeFromCart(${item.food_id})">
-        Remove
-      </button>
     </li>
-  `).join('');
+  `}).join('');
 }
 
 // Handle form submission
@@ -294,6 +381,52 @@ async function submitDonation(donationData) {
     console.error('Error submitting donation:', error);
     alert('Error submitting donation: ' + error.message);
   }
+}
+
+// Create quantity and unit selection modal
+function createQuantityModal() {
+  const modalHtml = `
+    <div class="modal fade" id="quantityModal" tabindex="-1" aria-labelledby="quantityModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="quantityModalLabel">Add Item to Donation</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="quantityModalQuantity" class="form-label">Quantity</label>
+              <input 
+                type="number" 
+                class="form-control" 
+                id="quantityModalQuantity" 
+                min="1" 
+                value="1"
+                placeholder="Enter quantity"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="quantityModalUnit" class="form-label">Unit of Measurement</label>
+              <select id="quantityModalUnit" class="form-select">
+                <option value="items">items</option>
+              </select>
+              <small class="form-text text-muted">Select the appropriate unit for this item (e.g., cans, lbs, loaves)</small>
+            </div>
+            <div class="alert alert-info" role="alert">
+              <small><strong>Example:</strong> If donating 3 cans of vegetables, enter Quantity: 3, Unit: cans</small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="confirmAddToCart()">Add to Donation</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Add modal to body
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
 // Utility functions
