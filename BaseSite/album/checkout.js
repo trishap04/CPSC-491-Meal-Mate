@@ -460,6 +460,7 @@ function handleFormSubmit(event) {
     last_name: document.getElementById('lastName').value.trim(),
     email: document.getElementById('email').value.trim(),
     phone: document.getElementById('phone').value.trim(),
+    address: document.getElementById('address').value.trim(),
     pickup_date: document.getElementById('pickupDate').value,
     pickup_time: document.getElementById('pickupTime').value,
     door_preference: doorPref.value,

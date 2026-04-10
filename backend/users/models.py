@@ -57,6 +57,7 @@ class Donation(models.Model):
     last_name = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
+    address = models.TextField()  # Pickup address
     
     # Donation details
     pickup_date = models.DateField()
