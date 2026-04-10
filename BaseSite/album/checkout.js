@@ -228,6 +228,9 @@ function confirmAddToCart() {
     });
   }
   
+  // Show success message
+  showAddedToCartMessage(pendingAddFood.name, quantity, unit);
+  
   updateCartUI();
   
   // Close modal
@@ -239,7 +242,39 @@ function confirmAddToCart() {
 
 // Remove item from cart
 function removeFromCart(foodId) {
-  cart = cart.filter(item => item.food_id !== foodId);
+  const item = cart.find(item => item.food_id === foodId);
+  if (item) {
+    const itemName = item.name;
+    const itemQuantity = item.quantity;
+    const itemUnit = item.unit;
+    
+    cart = cart.filter(item => item.food_id !== foodId);
+    
+    // Show removal message
+    const toastHtml = `
+      <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 11;">
+        <div class="toast align-items-center text-bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body" style="font-weight: 500;">
+              ✓ Removed: ${itemQuantity} ${itemUnit} of ${itemName}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', toastHtml);
+    const toastElement = document.querySelector('.toast-container .toast');
+    const bsToast = new bootstrap.Toast(toastElement, { delay: 2000 });
+    
+    toastElement.addEventListener('hidden.bs.toast', function() {
+      toastElement.parentElement.remove();
+    });
+    
+    bsToast.show();
+  }
+  
   updateCartUI();
 }
 
@@ -410,9 +445,15 @@ function handleFormSubmit(event) {
   }
   
   if (cart.length === 0) {
-    alert('Please add at least one item to your donation');
+    showErrorToast('Please add at least one item to your donation');
     return;
   }
+  
+  // Disable submit button and show loading state
+  const submitButton = form.querySelector('button[type="submit"]');
+  const originalButtonText = submitButton.textContent;
+  submitButton.disabled = true;
+  submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...';
   
   const donationData = {
     first_name: document.getElementById('firstName').value.trim(),
@@ -455,12 +496,101 @@ async function submitDonation(donationData) {
     sessionStorage.setItem('lastDonationId', result.id);
     sessionStorage.setItem('lastDonationData', JSON.stringify(result));
     
-    // Redirect to confirmation page
-    window.location.href = 'donation-confirmation.html?id=' + result.id;
+    // Show success toast
+    showSuccessToast(`✓ Donation #${String(result.id).padStart(5, '0')} submitted successfully!`, () => {
+      // Redirect to confirmation page after toast
+      window.location.href = 'donation-confirmation.html?id=' + result.id;
+    });
+    
   } catch (error) {
+    // Re-enable submit button
+    const form = document.getElementById('donorForm');
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = false;
+    submitButton.innerHTML = 'Continue';
+    
     console.error('Error submitting donation:', error);
-    alert('Error submitting donation: ' + error.message);
+    showErrorToast('Error: ' + error.message);
   }
+}
+
+// Success Toast Notification
+function showSuccessToast(message, callback) {
+  const toastHtml = `
+    <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 11; margin-top: 20px;">
+      <div class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body" style="font-weight: 500; font-size: 1.05rem;">
+            ${message}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', toastHtml);
+  const toastElement = document.querySelector('.toast-container .toast');
+  const bsToast = new bootstrap.Toast(toastElement, { delay: 3000 });
+  
+  toastElement.addEventListener('hidden.bs.toast', function() {
+    if (callback) callback();
+    toastElement.parentElement.remove();
+  });
+  
+  bsToast.show();
+}
+
+// Error Toast Notification
+function showErrorToast(message) {
+  const toastHtml = `
+    <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 11; margin-top: 20px;">
+      <div class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body" style="font-weight: 500; font-size: 1.05rem;">
+            ${message}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', toastHtml);
+  const toastElement = document.querySelector('.toast-container .toast');
+  const bsToast = new bootstrap.Toast(toastElement, { delay: 5000 });
+  
+  toastElement.addEventListener('hidden.bs.toast', function() {
+    toastElement.parentElement.remove();
+  });
+  
+  bsToast.show();
+}
+
+// Success Message for cart operations
+function showAddedToCartMessage(itemName, quantity, unit) {
+  const toastHtml = `
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 11;">
+      <div class="toast align-items-center text-bg-info border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body" style="font-weight: 500;">
+            ✓ Added to donation: ${quantity} ${unit} of ${itemName}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', toastHtml);
+  const toastElement = document.querySelector('.toast-container .toast');
+  const bsToast = new bootstrap.Toast(toastElement, { delay: 2000 });
+  
+  toastElement.addEventListener('hidden.bs.toast', function() {
+    toastElement.parentElement.remove();
+  });
+  
+  bsToast.show();
 }
 
 // Create quantity and unit selection modal
