@@ -348,39 +348,6 @@
     </ul>
   </footer>
   </div>
-  <script>
-    const donorForm = document.getElementById('donorForm');
-
-    donorForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-
-      const doorPref = document.querySelector('input[name="doorPreference"]:checked');
-      if (!doorPref) {
-        document.getElementById('doorPreferenceError').style.display = 'block';
-      } else {
-        document.getElementById('doorPreferenceError').style.display = 'none';
-      }
-
-      if (!donorForm.checkValidity() || !doorPref) {
-        donorForm.classList.add('was-validated');
-        return;
-      }
-
-      const donorData = {
-        firstName: document.getElementById('firstName').value.trim(),
-        lastName: document.getElementById('lastName').value.trim(),
-        phone: document.getElementById('phone').value.trim(),
-        pickupTime: document.getElementById('pickupTime').value,
-        doorPreference: doorPref.value,
-        email: document.getElementById('email').value.trim(),
-        pickupDate: document.getElementById('pickupDate').value,
-      };
-
-      sessionStorage.setItem('donorInfo', JSON.stringify(donorData));
-      console.log('Donor info captured:', donorData);
-      // window.location.href = 'next-step.html';
-    });
-  </script>
   <script src="../assets/dist/js/bootstrap.bundle.min.js" class="astro-vvvwv3sm"></script>
   <script src="checkout.js" class="astro-vvvwv3sm"></script>
 </body>
