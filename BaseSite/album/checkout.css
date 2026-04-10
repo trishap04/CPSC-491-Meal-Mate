@@ -93,11 +93,19 @@
 #cartItems .form-select-sm {
   font-size: 0.8rem;
   padding: 4px 6px;
+  transition: all 0.2s ease;
+}
+
+#cartItems .form-control-sm:focus,
+#cartItems .form-select-sm:focus {
+  border-color: #712cf9;
+  box-shadow: 0 0 0 0.2rem rgba(113, 44, 249, 0.15);
 }
 
 #cartItems .form-label {
   font-weight: 600;
   color: #495057;
+  margin-bottom: 4px !important;
 }
 
 #cartItems input[type="number"] {
@@ -107,10 +115,19 @@
   font-weight: 600;
 }
 
+#cartItems input[type="number"]:hover {
+  background-color: #f8f9fa;
+  border-color: #712cf9;
+}
+
 #cartItems select {
   border: 1px solid #dee2e6;
   border-radius: 4px;
   padding: 6px 8px;
+}
+
+#cartItems select:hover {
+  border-color: #712cf9;
 }
 
 /* Quantity and unit badge */
@@ -122,6 +139,45 @@
   color: #004085 !important;
   border: 1px solid #b3d9f2;
   border-radius: 4px;
+}
+
+/* Remove button styling */
+#cartItems .btn-danger {
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+#cartItems .btn-danger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+/* Cart item container */
+#cartItems li {
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
+  background-color: #fff;
+  transition: all 0.2s ease;
+}
+
+#cartItems li:hover {
+  background-color: #f8f9fa;
+  border-left: 3px solid #712cf9;
+  padding-left: calc(12px - 3px);
+}
+
+#cartItems li:last-child {
+  border-bottom: none;
+}
+
+/* Edit instructions */
+#cartItems .edit-hint {
+  font-size: 0.75rem;
+  color: #6c757d;
+  font-style: italic;
+  margin-top: 4px;
 }
 
 /* Modal styling */

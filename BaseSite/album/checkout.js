@@ -275,16 +275,18 @@ function updateCartUI() {
       <div class="d-flex justify-content-between align-items-start mb-2">
         <div style="flex: 1;">
           <h6 class="my-0">${escapeHtml(item.name)}</h6>
+          <small class="edit-hint">💡 Click to edit quantity or unit, click Remove to delete</small>
         </div>
         <button 
           class="btn btn-sm btn-danger ms-2"
-          onclick="removeFromCart(${item.food_id})">
+          onclick="removeFromCart(${item.food_id})"
+          title="Remove this item from donation">
           Remove
         </button>
       </div>
       <div class="row g-2 align-items-center mt-2">
         <div class="col-auto">
-          <label class="form-label mb-0 small">Quantity:</label>
+          <label class="form-label mb-0 small" title="Edit the quantity">Quantity:</label>
           <input 
             type="number" 
             min="1" 
@@ -292,21 +294,23 @@ function updateCartUI() {
             onchange="updateQuantity(${item.food_id}, this.value)"
             class="form-control form-control-sm"
             style="width: 80px;"
+            title="Change the quantity of this item"
           />
         </div>
         <div class="col-auto">
-          <label class="form-label mb-0 small">Unit:</label>
+          <label class="form-label mb-0 small" title="Edit the measurement unit">Unit:</label>
           <select 
             class="form-select form-select-sm"
             onchange="updateUnit(${item.food_id}, this.value)"
-            style="width: 110px;">
+            style="width: 110px;"
+            title="Change the measurement unit (e.g., cans, lbs, loaves)">
             ${allUnits.map(unit => 
               `<option value="${unit}" ${unit === item.unit ? 'selected' : ''}>${unit}</option>`
             ).join('')}
           </select>
         </div>
         <div class="col-auto mt-4">
-          <span class="badge bg-info text-dark ms-2">${item.quantity} ${item.unit}</span>
+          <span class="badge bg-info text-dark ms-2" title="Summary of donation amount">${item.quantity} ${item.unit}</span>
         </div>
       </div>
     </li>
