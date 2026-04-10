@@ -88,6 +88,50 @@
   padding: 4px 8px;
 }
 
+/* Cart item quantity and unit controls */
+#cartItems .form-control-sm,
+#cartItems .form-select-sm {
+  font-size: 0.8rem;
+  padding: 4px 6px;
+}
+
+#cartItems .form-label {
+  font-weight: 600;
+  color: #495057;
+}
+
+#cartItems input[type="number"] {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-weight: 600;
+}
+
+#cartItems select {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+
+/* Quantity and unit badge */
+#cartItems .badge {
+  font-size: 0.9rem;
+  padding: 6px 10px;
+  font-weight: 600;
+  background-color: #e7f3ff !important;
+  color: #004085 !important;
+  border: 1px solid #b3d9f2;
+  border-radius: 4px;
+}
+
+/* Modal styling */
+.modal-body .alert-info {
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+  color: #0c5460;
+  border-radius: 4px;
+}
+
 /* Form input styling */
 input[type="number"] {
   border: 1px solid #dee2e6;
@@ -109,5 +153,19 @@ input[type="number"] {
   #categoryButtons button {
     padding: 5px 10px;
     font-size: 0.8rem;
+  }
+  
+  #cartItems .row {
+    flex-direction: column;
+  }
+  
+  #cartItems .col-auto {
+    width: 100% !important;
+    margin-bottom: 8px;
+  }
+  
+  #cartItems .form-control-sm,
+  #cartItems .form-select-sm {
+    width: 100% !important;
   }
 }
