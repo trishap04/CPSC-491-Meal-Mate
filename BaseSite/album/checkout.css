@@ -188,6 +188,78 @@
   border-radius: 4px;
 }
 
+/* Donation Summary Card Styling */
+.card.bg-light {
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.card-header.bg-primary {
+  background-color: #712cf9 !important;
+  padding: 15px;
+  border-bottom: 2px solid #5a23c8;
+}
+
+.card-header.bg-primary h5 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+#donationSummary .list-group-flush .list-group-item {
+  border-color: #dee2e6;
+  background-color: #fff;
+  padding: 10px 0;
+}
+
+#donationSummary .list-group-flush .list-group-item:not(:last-child) {
+  border-bottom: 1px solid #dee2e6;
+}
+
+#donationSummary .list-group-flush .list-group-item strong {
+  color: #212529;
+  display: block;
+  margin-bottom: 4px;
+}
+
+#donationSummary .list-group-flush .list-group-item small {
+  color: #6c757d;
+  font-weight: 500;
+}
+
+#donationSummary .card-body {
+  padding: 20px;
+}
+
+#donationSummary .card-subtitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #495057 !important;
+}
+
+#donationSummary .row {
+  gap: 15px;
+}
+
+#donationSummary .col-md-6 {
+  padding: 0;
+}
+
+#donationSummary .col-md-6 small {
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  display: block;
+  margin-bottom: 4px;
+}
+
+#donationSummary .col-md-6 p {
+  color: #212529;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
 /* Form input styling */
 input[type="number"] {
   border: 1px solid #dee2e6;
