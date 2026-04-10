@@ -54,7 +54,7 @@ class DonationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Donation
         fields = [
-            'id', 'first_name', 'last_name', 'email', 'phone',
+            'id', 'first_name', 'last_name', 'email', 'phone', 'address',
             'pickup_date', 'pickup_time', 'door_preference',
             'created_at', 'status', 'items'
         ]

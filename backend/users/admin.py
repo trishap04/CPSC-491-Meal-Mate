@@ -49,7 +49,7 @@ class DonationAdmin(admin.ModelAdmin):
             'fields': ('first_name', 'last_name', 'email', 'phone')
         }),
         ('Pickup Details', {
-            'fields': ('pickup_date', 'pickup_time', 'door_preference')
+            'fields': ('address', 'pickup_date', 'pickup_time', 'door_preference')
         }),
         ('Status', {
             'fields': ('status', 'created_at')
