@@ -201,34 +201,49 @@
       <div class="row g-5">
         <div class="col-md-5 col-lg-4 order-md-last">
           <h4 class="d-flex justify-content-between align-items-center mb-3">
-            <span class="text-primary">Your cart</span>
-            <span class="badge bg-primary rounded-pill">3</span>
+            <span class="text-primary">Your donation</span>
+            <span class="badge bg-primary rounded-pill" id="cartCount">0</span>
           </h4>
-          <ul class="list-group mb-3">
-            <li class="list-group-item d-flex justify-content-between lh-sm">
-              <div>
-                <h6 class="my-0">Product name</h6>
-                <small class="text-body-secondary">Brief description</small>
-              </div>
-              <span class="text-body-secondary">$12</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between lh-sm">
-              <div>
-                <h6 class="my-0">Second product</h6>
-                <small class="text-body-secondary">Brief description</small>
-              </div>
-              <span class="text-body-secondary">$8</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between lh-sm">
-              <div>
-                <h6 class="my-0">Third item</h6>
-                <small class="text-body-secondary">Brief description</small>
-              </div>
-              <span class="text-body-secondary">$5</span>
-            </li>
+          
+          <!-- Food Categories -->
+          <div class="mb-3">
+            <label class="form-label">Select food category:</label>
+            <div class="d-flex flex-wrap gap-2 mb-3" id="categoryButtons">
+              <!-- Categories will be loaded here -->
+            </div>
+          </div>
 
+          <!-- Food Search -->
+          <div class="mb-3">
+            <label for="foodSearch" class="form-label">Search for food:</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="foodSearch" 
+              placeholder="Search by food name..." 
+            />
+          </div>
 
+          <!-- Food List -->
+          <div class="mb-3">
+            <label class="form-label">Available foods:</label>
+            <ul class="list-group mb-3" id="foodList" style="max-height: 250px; overflow-y: auto;">
+              <!-- Foods will be loaded here -->
+            </ul>
+          </div>
+
+          <!-- Cart Items -->
+          <ul class="list-group mb-3" id="cartItems">
+            <!-- Cart items will be displayed here -->
+            <li class="list-group-item text-muted text-center py-3">No items in cart</li>
           </ul>
+
+          <!-- Cart Summary -->
+          <div id="cartSummary" style="display: none;">
+            <ul class="list-group" id="cartSummaryList">
+              <!-- Summary will be shown here -->
+            </ul>
+          </div>
 
         </div>
         <div class="col-md-7 col-lg-8">
