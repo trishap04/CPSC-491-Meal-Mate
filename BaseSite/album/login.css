@@ -1,0 +1,163 @@
+:root {
+  --login-navy: #1c2640;
+  --login-gold: #f3d27a;
+  --login-cream: #f7f3e8;
+  --login-ink: #1e2331;
+  --login-muted: #677086;
+  --login-panel: rgba(255, 255, 255, 0.92);
+  --login-border: rgba(28, 38, 64, 0.12);
+  --login-shadow: 0 30px 80px rgba(18, 29, 51, 0.18);
+}
+
+body.login-page {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--login-ink);
+  background:
+    radial-gradient(circle at top left, rgba(243, 210, 122, 0.7), transparent 28%),
+    linear-gradient(135deg, #fff9ef 0%, #ecf4ff 48%, #f8efe4 100%);
+}
+
+.login-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+}
+
+.login-card {
+  width: min(980px, 100%);
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  border: 1px solid var(--login-border);
+  border-radius: 28px;
+  overflow: hidden;
+  background: var(--login-panel);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--login-shadow);
+}
+
+.brand-panel {
+  padding: 48px;
+  color: #fff;
+  background:
+    linear-gradient(160deg, rgba(28, 38, 64, 0.96), rgba(40, 59, 98, 0.92)),
+    linear-gradient(45deg, rgba(243, 210, 122, 0.18), transparent);
+}
+
+.brand-link,
+.utility-link {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.brand-link:hover,
+.utility-link:hover {
+  text-decoration: underline;
+}
+
+.brand-logo {
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+  margin: 56px 0 20px;
+}
+
+.eyebrow,
+.form-kicker {
+  margin-bottom: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.brand-panel h1,
+.form-panel h2 {
+  margin-bottom: 16px;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1;
+}
+
+.brand-copy,
+.form-subtitle,
+.account-prompt {
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.form-panel {
+  padding: 48px;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.form-header {
+  margin-bottom: 28px;
+}
+
+.form-kicker {
+  color: var(--login-muted);
+}
+
+.form-subtitle,
+.account-prompt {
+  color: var(--login-muted);
+}
+
+.form-label {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.form-control {
+  min-height: 52px;
+  border-radius: 14px;
+  border: 1px solid rgba(28, 38, 64, 0.16);
+  padding: 14px 16px;
+}
+
+.form-control:focus {
+  border-color: #315aa6;
+  box-shadow: 0 0 0 0.25rem rgba(49, 90, 166, 0.16);
+}
+
+.login-button {
+  margin-top: 12px;
+  min-height: 52px;
+  border: 0;
+  border-radius: 14px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #1c2640, #355b98);
+}
+
+.login-button:hover,
+.login-button:focus {
+  background: linear-gradient(135deg, #273657, #406ab0);
+}
+
+.alert {
+  border-radius: 14px;
+  margin-bottom: 20px;
+}
+
+.account-prompt {
+  margin-top: 20px;
+  margin-bottom: 0;
+}
+
+@media (max-width: 767.98px) {
+  .login-card {
+    grid-template-columns: 1fr;
+  }
+
+  .brand-panel,
+  .form-panel {
+    padding: 32px 24px;
+  }
+
+  .brand-logo {
+    margin-top: 24px;
+  }
+}

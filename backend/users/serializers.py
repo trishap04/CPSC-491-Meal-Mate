@@ -2,14 +2,26 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import UserProfile, Food, FoodCategory, Donation, DonationItem
 
+
 class RegisterSerializer(serializers.ModelSerializer):
     bio = serializers.CharField(required=False, allow_blank=True)
     role = serializers.CharField(required=False, default='donor')
+    email = serializers.EmailField(required=True)
 
     class Meta:
         model = User
         fields = ['username', 'email', 'password', 'bio', 'role']
         extra_kwargs = {'password': {'write_only': True}}
+
+    def validate_username(self, value):
+        if User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError('That username is already taken.')
+        return value
+
+    def validate_email(self, value):
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError('That email is already registered.')
+        return value
 
     def create(self, validated_data):
         bio = validated_data.pop('bio', '')
@@ -22,6 +34,16 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         UserProfile.objects.create(user=user, bio=bio, role=role)
         return user
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(min_length=8)
 
 
 class FoodCategorySerializer(serializers.ModelSerializer):
@@ -59,4 +81,3 @@ class DonationSerializer(serializers.ModelSerializer):
             'created_at', 'status', 'items'
         ]
         read_only_fields = ['id', 'created_at', 'status']
-
