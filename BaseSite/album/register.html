@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Create Meal Mate Account</title>
+  <link rel="shortcut icon" href="../assets/images/mealmate-high-resolution-logo-grayscale-transparent.png"
+    type="image/x-icon" />
+  <script src="../assets/js/color-modes.js"></script>
+  <link href="../assets/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="login.css" rel="stylesheet" />
+</head>
+
+<body class="login-page">
+  <main class="login-shell">
+    <section class="login-card shadow-lg">
+      <div class="brand-panel">
+        <a href="login.html" class="brand-link">Back to login</a>
+        <img src="../assets/images/mealmate-high-resolution-logo-transparent.png" alt="Meal Mate logo"
+          class="brand-logo" />
+        <p class="eyebrow">Meal Mate</p>
+        <h1>Create account</h1>
+        <p class="brand-copy">
+          Create your Meal Mate profile so you can sign in, coordinate donations, and stay connected with the platform.
+        </p>
+      </div>
+
+      <div class="form-panel">
+        <div class="form-header">
+          <p class="form-kicker">Registration</p>
+          <h2>Sign up</h2>
+          <p class="form-subtitle">Fill out the form below to create your account.</p>
+        </div>
+
+        <div id="registerMessage" class="alert d-none" role="alert" aria-live="polite"></div>
+
+        <form id="registerForm" novalidate>
+          <div class="mb-3">
+            <label for="registerUsername" class="form-label">Username</label>
+            <input type="text" class="form-control" id="registerUsername" name="username"
+              placeholder="Choose a username" required />
+            <div class="invalid-feedback">Please choose a username.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="registerEmail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="registerEmail" name="email"
+              placeholder="Enter your email" required />
+            <div class="invalid-feedback">Please enter a valid email address.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="registerPassword" class="form-label">Password</label>
+            <input type="password" class="form-control" id="registerPassword" name="password"
+              placeholder="Create a password" minlength="8" required />
+            <div class="invalid-feedback">Please enter a password with at least 8 characters.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="registerPasswordConfirm" class="form-label">Confirm password</label>
+            <input type="password" class="form-control" id="registerPasswordConfirm" name="passwordConfirm"
+              placeholder="Re-enter your password" minlength="8" required />
+            <div class="invalid-feedback">Please confirm your password.</div>
+          </div>
+
+          <button type="submit" id="registerSubmitButton" class="btn btn-primary w-100 login-button">Create
+            Account</button>
+        </form>
+
+        <p class="account-prompt">
+          Already have an account?
+          <a href="login.html" class="utility-link">Log In</a>
+        </p>
+      </div>
+    </section>
+  </main>
+  <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="register.js"></script>
+</body>
+
+</html>
