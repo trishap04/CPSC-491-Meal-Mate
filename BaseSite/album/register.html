@@ -37,10 +37,28 @@
 
         <form id="registerForm" novalidate>
           <div class="mb-3">
+            <label for="registerFirstName" class="form-label">First Name</label>
+            <input type="text" class="form-control" id="registerFirstName" name="firstName"
+              placeholder="Enter your first name" />
+            <div class="invalid-feedback">Please enter your first name.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="registerLastName" class="form-label">Last Name</label>
+            <input type="text" class="form-control" id="registerLastName" name="lastName"
+              placeholder="Enter your last name" />
+            <div class="invalid-feedback">Please enter your last name.</div>
+          </div>
+
+          <div class="mb-3">
             <label for="registerUsername" class="form-label">Username</label>
-            <input type="text" class="form-control" id="registerUsername" name="username"
-              placeholder="Choose a username" required />
+            <div class="input-group">
+              <input type="text" class="form-control" id="registerUsername" name="username"
+                placeholder="Choose a username" required />
+              <span class="input-group-text" id="usernameAvailability"></span>
+            </div>
             <div class="invalid-feedback">Please choose a username.</div>
+            <small class="form-text text-muted" id="usernameMessage"></small>
           </div>
 
           <div class="mb-3">
@@ -51,10 +69,34 @@
           </div>
 
           <div class="mb-3">
+            <label for="registerPhone" class="form-label">Phone Number (Optional)</label>
+            <input type="tel" class="form-control" id="registerPhone" name="phone"
+              placeholder="Enter your phone number" />
+            <div class="invalid-feedback">Please enter a valid phone number.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="registerRole" class="form-label">I am a:</label>
+            <select class="form-select" id="registerRole" name="role" required>
+              <option value="">Select your role</option>
+              <option value="donor">Donor (I want to donate food)</option>
+              <option value="recipient">Recipient (I need food assistance)</option>
+              <option value="organization">Organization (Food Bank / Nonprofit)</option>
+            </select>
+            <div class="invalid-feedback">Please select a role.</div>
+          </div>
+
+          <div class="mb-3">
             <label for="registerPassword" class="form-label">Password</label>
             <input type="password" class="form-control" id="registerPassword" name="password"
               placeholder="Create a password" minlength="8" required />
             <div class="invalid-feedback">Please enter a password with at least 8 characters.</div>
+            <div class="password-strength mt-2">
+              <small class="form-text">Password strength: <span id="strengthText">Very Weak</span></small>
+              <div class="strength-meter">
+                <div class="strength-meter-fill" id="strengthMeter"></div>
+              </div>
+            </div>
           </div>
 
           <div class="mb-3">
@@ -62,6 +104,14 @@
             <input type="password" class="form-control" id="registerPasswordConfirm" name="passwordConfirm"
               placeholder="Re-enter your password" minlength="8" required />
             <div class="invalid-feedback">Please confirm your password.</div>
+          </div>
+
+          <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="termsCheckbox" name="terms" required />
+            <label class="form-check-label" for="termsCheckbox">
+              I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
+            </label>
+            <div class="invalid-feedback">You must accept the terms and conditions.</div>
           </div>
 
           <button type="submit" id="registerSubmitButton" class="btn btn-primary w-100 login-button">Create
@@ -75,6 +125,44 @@
       </div>
     </section>
   </main>
+
+  <!-- Terms and Conditions Modal -->
+  <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="termsModalLabel">Terms and Conditions</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h5>Meal Mate - Terms and Conditions</h5>
+          <p>By creating an account and using Meal Mate, you agree to the following terms:</p>
+          
+          <h6>1. User Responsibilities</h6>
+          <p>Users are responsible for maintaining the confidentiality of their account credentials and for all activities that occur under their account.</p>
+          
+          <h6>2. Donation Safety</h6>
+          <p>All food donations must comply with local health and safety regulations. Donors are responsible for ensuring food is safe for consumption.</p>
+          
+          <h6>3. Prohibited Activities</h6>
+          <p>Users may not misrepresent themselves, their food donations, or their organization. Fraudulent activity is strictly prohibited.</p>
+          
+          <h6>4. Data Privacy</h6>
+          <p>Meal Mate respects your privacy. Your personal information will only be used to coordinate food donations and will not be shared with third parties without your consent.</p>
+          
+          <h6>5. Liability</h6>
+          <p>Meal Mate is provided as-is. We are not liable for any damages arising from the use of this platform.</p>
+          
+          <h6>6. Modification of Terms</h6>
+          <p>We reserve the right to modify these terms at any time. Continued use of the platform constitutes acceptance of modified terms.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
   <script src="register.js"></script>
 </body>

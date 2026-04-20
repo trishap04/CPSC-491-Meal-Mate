@@ -4,13 +4,17 @@ from .models import UserProfile, Food, FoodCategory, Donation, DonationItem
 
 
 class RegisterSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(required=False, allow_blank=True)
+    last_name = serializers.CharField(required=False, allow_blank=True)
+    phone_number = serializers.CharField(required=False, allow_blank=True)
     bio = serializers.CharField(required=False, allow_blank=True)
     role = serializers.CharField(required=False, default='donor')
+    terms_accepted = serializers.BooleanField(required=True)
     email = serializers.EmailField(required=True)
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'bio', 'role']
+        fields = ['username', 'email', 'password', 'first_name', 'last_name', 'phone_number', 'bio', 'role', 'terms_accepted']
         extra_kwargs = {'password': {'write_only': True}}
 
     def validate_username(self, value):
@@ -23,16 +27,37 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('That email is already registered.')
         return value
 
+    def validate_terms_accepted(self, value):
+        if not value:
+            raise serializers.ValidationError('You must accept the terms and conditions.')
+        return value
+
     def create(self, validated_data):
+        first_name = validated_data.pop('first_name', '')
+        last_name = validated_data.pop('last_name', '')
+        phone_number = validated_data.pop('phone_number', '')
         bio = validated_data.pop('bio', '')
         role = validated_data.pop('role', 'donor')
+        terms_accepted = validated_data.pop('terms_accepted', False)
+        
         # create_user automatically handles basic PBKDF2 hashing out of the box
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data.get('email', ''),
-            password=validated_data['password']
+            password=validated_data['password'],
+            first_name=first_name,
+            last_name=last_name
         )
-        UserProfile.objects.create(user=user, bio=bio, role=role)
+        UserProfile.objects.create(
+            user=user, 
+            first_name=first_name,
+            last_name=last_name,
+            phone_number=phone_number,
+            bio=bio, 
+            role=role,
+            terms_accepted=terms_accepted,
+            email_verified=False
+        )
         return user
 
 
