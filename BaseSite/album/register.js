@@ -1,22 +1,140 @@
 const registerForm = document.getElementById("registerForm");
 const registerMessage = document.getElementById("registerMessage");
 const registerSubmitButton = document.getElementById("registerSubmitButton");
+const registerUsername = document.getElementById("registerUsername");
+const registerPassword = document.getElementById("registerPassword");
+const usernameAvailability = document.getElementById("usernameAvailability");
+const usernameMessage = document.getElementById("usernameMessage");
+const strengthMeter = document.getElementById("strengthMeter");
+const strengthText = document.getElementById("strengthText");
+const termsCheckbox = document.getElementById("termsCheckbox");
+
 const registerEndpoint =
   window.location.port === "5500"
     ? "http://127.0.0.1:8000/api/users/register/"
     : "/api/users/register/";
 
-function setRegisterMessage(message, type) {
-  registerMessage.textContent = message;
-  registerMessage.className = `alert alert-${type}`;
+const usernameCheckEndpoint =
+  window.location.port === "5500"
+    ? "http://127.0.0.1:8000/api/users/check-username/"
+    : "/api/users/check-username/";
+
+let usernameCheckTimeout;
+
+// Password Strength Indicator
+function calculatePasswordStrength(password) {
+  let strength = 0;
+  
+  if (!password) return 0;
+  
+  // Length
+  if (password.length >= 8) strength += 1;
+  if (password.length >= 12) strength += 1;
+  if (password.length >= 16) strength += 1;
+  
+  // Lowercase
+  if (/[a-z]/.test(password)) strength += 1;
+  
+  // Uppercase
+  if (/[A-Z]/.test(password)) strength += 1;
+  
+  // Numbers
+  if (/[0-9]/.test(password)) strength += 1;
+  
+  // Special characters
+  if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) strength += 1;
+  
+  return Math.min(strength, 5); // Max strength of 5
 }
 
+function updatePasswordStrength() {
+  const password = registerPassword.value;
+  const strength = calculatePasswordStrength(password);
+  
+  const strengthPercentage = (strength / 5) * 100;
+  strengthMeter.style.width = strengthPercentage + '%';
+  
+  // Set color and text based on strength
+  if (strength === 0) {
+    strengthMeter.style.backgroundColor = '#ccc';
+    strengthText.textContent = 'No password';
+  } else if (strength === 1) {
+    strengthMeter.style.backgroundColor = '#d32f2f';
+    strengthText.textContent = 'Very Weak';
+  } else if (strength === 2) {
+    strengthMeter.style.backgroundColor = '#f57c00';
+    strengthText.textContent = 'Weak';
+  } else if (strength === 3) {
+    strengthMeter.style.backgroundColor = '#fbc02d';
+    strengthText.textContent = 'Fair';
+  } else if (strength === 4) {
+    strengthMeter.style.backgroundColor = '#7cb342';
+    strengthText.textContent = 'Good';
+  } else {
+    strengthMeter.style.backgroundColor = '#388e3c';
+    strengthText.textContent = 'Strong';
+  }
+}
+
+// Real-time Username Availability Check
+registerUsername?.addEventListener('input', async (event) => {
+  const username = event.target.value.trim();
+  
+  // Clear previous timeout
+  clearTimeout(usernameCheckTimeout);
+  
+  if (!username || username.length < 3) {
+    usernameAvailability.textContent = '';
+    usernameMessage.textContent = '';
+    return;
+  }
+  
+  // Set timeout to check after user stops typing
+  usernameCheckTimeout = setTimeout(async () => {
+    try {
+      usernameMessage.textContent = 'Checking...';
+      usernameAvailability.innerHTML = '⏳';
+      
+      const response = await fetch(registerEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username, check_only: true }),
+      });
+      
+      if (response.ok) {
+        // Username is available
+        usernameAvailability.innerHTML = '✓';
+        usernameAvailability.style.color = '#388e3c';
+        usernameMessage.textContent = 'Username is available';
+        usernameMessage.style.color = '#388e3c';
+      } else {
+        const data = await response.json();
+        if (data.username) {
+          // Username is taken
+          usernameAvailability.innerHTML = '✗';
+          usernameAvailability.style.color = '#d32f2f';
+          usernameMessage.textContent = data.username[0] || 'Username is already taken';
+          usernameMessage.style.color = '#d32f2f';
+        }
+      }
+    } catch (error) {
+      usernameAvailability.innerHTML = '';
+      usernameMessage.textContent = '';
+    }
+  }, 500);
+});
+
+// Password strength indicator
+registerPassword?.addEventListener('input', updatePasswordStrength);
+
+// Form submission
 registerForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   registerMessage.className = "alert d-none";
 
   const password = document.getElementById("registerPassword").value;
   const confirmPassword = document.getElementById("registerPasswordConfirm").value;
+  const terms = document.getElementById("termsCheckbox").checked;
 
   if (!registerForm.checkValidity()) {
     registerForm.classList.add("was-validated");
@@ -27,6 +145,12 @@ registerForm?.addEventListener("submit", async (event) => {
   if (password !== confirmPassword) {
     registerForm.classList.add("was-validated");
     setRegisterMessage("Passwords do not match.", "danger");
+    return;
+  }
+
+  if (!terms) {
+    registerForm.classList.add("was-validated");
+    setRegisterMessage("You must accept the terms and conditions.", "danger");
     return;
   }
 
@@ -44,6 +168,11 @@ registerForm?.addEventListener("submit", async (event) => {
         username: document.getElementById("registerUsername").value.trim(),
         email: document.getElementById("registerEmail").value.trim(),
         password,
+        first_name: document.getElementById("registerFirstName").value.trim(),
+        last_name: document.getElementById("registerLastName").value.trim(),
+        phone_number: document.getElementById("registerPhone").value.trim(),
+        role: document.getElementById("registerRole").value,
+        terms_accepted: terms,
       }),
     });
 
@@ -55,12 +184,13 @@ registerForm?.addEventListener("submit", async (event) => {
       return;
     }
 
-    setRegisterMessage(data.message || "Account created successfully.", "success");
+    setRegisterMessage(data.message || "Account created successfully. Redirecting to login...", "success");
     registerForm.reset();
     registerForm.classList.remove("was-validated");
+    strengthMeter.style.width = '0%';
     setTimeout(() => {
       window.location.href = "login.html";
-    }, 1200);
+    }, 1500);
   } catch (error) {
     setRegisterMessage("We could not reach the server. Please try again.", "danger");
   } finally {
@@ -68,3 +198,8 @@ registerForm?.addEventListener("submit", async (event) => {
     registerSubmitButton.textContent = "Create Account";
   }
 });
+
+function setRegisterMessage(message, type) {
+  registerMessage.textContent = message;
+  registerMessage.className = `alert alert-${type}`;
+}

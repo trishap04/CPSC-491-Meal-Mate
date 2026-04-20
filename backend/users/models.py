@@ -2,10 +2,22 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class UserProfile(models.Model):
+    ROLE_CHOICES = [
+        ('donor', 'Donor'),
+        ('recipient', 'Recipient'),
+        ('organization', 'Organization'),
+    ]
+    
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    first_name = models.CharField(max_length=100, blank=True, null=True)
+    last_name = models.CharField(max_length=100, blank=True, null=True)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
-    role = models.CharField(max_length=50, default='donor')
+    role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='donor')
+    email_verified = models.BooleanField(default=False)
+    terms_accepted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
