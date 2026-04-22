@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes, force_str
@@ -32,8 +33,11 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
+            refresh = RefreshToken.for_user(user)
             return Response({
                 "message": "User registered successfully!",
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
                 "user": {
                     "id": user.id,
                     "username": user.username,
@@ -74,9 +78,11 @@ class LoginView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        login(request, user)
+        refresh = RefreshToken.for_user(user)
         return Response({
             'message': 'Login successful. Redirecting you home.',
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
             'redirect_url': '/index.html',
             'user': {
                 'id': user.id,
