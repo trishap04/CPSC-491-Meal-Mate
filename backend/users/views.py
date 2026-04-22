@@ -294,6 +294,9 @@ class DonationCreateView(APIView):
             }
             
             # Create donation
+            if request.user.is_authenticated:
+                donation_data['user'] = request.user
+            
             donation = Donation.objects.create(**donation_data)
             
             # Extract and create donation items
@@ -333,6 +336,14 @@ class DonationDetailView(APIView):
     def get(self, request, donation_id):
         try:
             donation = Donation.objects.get(id=donation_id)
+            
+            # PII Minimization Audit: Only owner or staff can view full PII
+            if donation.user and donation.user != request.user and not request.user.is_staff:
+                return Response(
+                    {'error': 'You do not have permission to view this donation.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
             serializer = DonationSerializer(donation)
             return Response(serializer.data)
         except Donation.DoesNotExist:
