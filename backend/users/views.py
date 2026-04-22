@@ -95,6 +95,59 @@ class LoginView(APIView):
         }, status=status.HTTP_200_OK)
 
 
+@method_decorator(csrf_protect, name='dispatch')
+class CheckUsernameAvailabilityView(APIView):
+    """API to check if a username is available during registration or profile editing"""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = (request.data.get('username') or '').strip().lower()
+        exclude_user_id = request.data.get('exclude_user_id')  # For profile edits to exclude current user
+
+        if not username:
+            return Response({
+                'available': False,
+                'message': 'Username cannot be empty.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if len(username) < 3:
+            return Response({
+                'available': False,
+                'message': 'Username must be at least 3 characters long.'
+            }, status=status.HTTP_200_OK)
+
+        if len(username) > 150:
+            return Response({
+                'available': False,
+                'message': 'Username cannot exceed 150 characters.'
+            }, status=status.HTTP_200_OK)
+
+        # Check for valid characters (alphanumeric, underscore, hyphen only)
+        if not all(c.isalnum() or c in '_-' for c in username):
+            return Response({
+                'available': False,
+                'message': 'Username can only contain letters, numbers, underscores, and hyphens.'
+            }, status=status.HTTP_200_OK)
+
+        # Check if username exists (case-insensitive)
+        query = User.objects.filter(username__iexact=username)
+        
+        # Exclude current user if provided (for profile editing)
+        if exclude_user_id:
+            query = query.exclude(id=exclude_user_id)
+
+        if query.exists():
+            return Response({
+                'available': False,
+                'message': 'This username is already taken.'
+            }, status=status.HTTP_200_OK)
+
+        return Response({
+            'available': True,
+            'message': 'Username is available.'
+        }, status=status.HTTP_200_OK)
+
+
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 

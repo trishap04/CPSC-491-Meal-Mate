@@ -78,50 +78,79 @@ function updatePasswordStrength() {
 
 // Real-time Username Availability Check
 registerUsername?.addEventListener('input', async (event) => {
-  const username = event.target.value.trim();
+  const username = event.target.value.trim().toLowerCase();
   
   // Clear previous timeout
   clearTimeout(usernameCheckTimeout);
   
-  if (!username || username.length < 3) {
+  // Validation: Check minimum length
+  if (!username) {
     usernameAvailability.textContent = '';
     usernameMessage.textContent = '';
+    registerUsername.classList.remove('is-invalid', 'is-valid');
     return;
   }
-  
-  // Set timeout to check after user stops typing
+
+  if (username.length < 3) {
+    usernameAvailability.innerHTML = '⚠️';
+    usernameAvailability.style.color = '#ff9800';
+    usernameMessage.textContent = 'Username must be at least 3 characters';
+    usernameMessage.style.color = '#ff9800';
+    registerUsername.classList.add('is-invalid');
+    registerUsername.classList.remove('is-valid');
+    return;
+  }
+
+  // Validation: Check for valid characters
+  if (!/^[a-z0-9_-]+$/.test(username)) {
+    usernameAvailability.innerHTML = '❌';
+    usernameAvailability.style.color = '#d32f2f';
+    usernameMessage.textContent = 'Username can only contain letters, numbers, underscores, and hyphens';
+    usernameMessage.style.color = '#d32f2f';
+    registerUsername.classList.add('is-invalid');
+    registerUsername.classList.remove('is-valid');
+    return;
+  }
+
+  // Set timeout to check after user stops typing (debounce)
   usernameCheckTimeout = setTimeout(async () => {
     try {
       usernameMessage.textContent = 'Checking...';
       usernameAvailability.innerHTML = '⏳';
+      usernameAvailability.style.color = '#666';
       
-      const response = await fetch(registerEndpoint, {
+      const response = await fetch(usernameCheckEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username, check_only: true }),
+        body: JSON.stringify({ username: username }),
       });
       
-      if (response.ok) {
+      const data = await response.json();
+      
+      if (data.available) {
         // Username is available
-        usernameAvailability.innerHTML = '✓';
+        usernameAvailability.innerHTML = '✅';
         usernameAvailability.style.color = '#388e3c';
-        usernameMessage.textContent = 'Username is available';
+        usernameMessage.textContent = '✓ Username is available';
         usernameMessage.style.color = '#388e3c';
+        registerUsername.classList.add('is-valid');
+        registerUsername.classList.remove('is-invalid');
       } else {
-        const data = await response.json();
-        if (data.username) {
-          // Username is taken
-          usernameAvailability.innerHTML = '✗';
-          usernameAvailability.style.color = '#d32f2f';
-          usernameMessage.textContent = data.username[0] || 'Username is already taken';
-          usernameMessage.style.color = '#d32f2f';
-        }
+        // Username is not available
+        usernameAvailability.innerHTML = '❌';
+        usernameAvailability.style.color = '#d32f2f';
+        usernameMessage.textContent = '✗ ' + (data.message || 'Username is already taken');
+        usernameMessage.style.color = '#d32f2f';
+        registerUsername.classList.add('is-invalid');
+        registerUsername.classList.remove('is-valid');
       }
     } catch (error) {
+      console.error('Username check error:', error);
       usernameAvailability.innerHTML = '';
-      usernameMessage.textContent = '';
+      usernameMessage.textContent = 'Could not check availability';
+      usernameMessage.style.color = '#ff9800';
     }
-  }, 500);
+  }, 500); // Debounce: wait 500ms after user stops typing
 });
 
 // Password strength indicator
@@ -132,6 +161,7 @@ registerForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   registerMessage.className = "alert d-none";
 
+  const username = document.getElementById("registerUsername").value.trim().toLowerCase();
   const password = document.getElementById("registerPassword").value;
   const confirmPassword = document.getElementById("registerPasswordConfirm").value;
   const terms = document.getElementById("termsCheckbox").checked;
@@ -154,6 +184,26 @@ registerForm?.addEventListener("submit", async (event) => {
     return;
   }
 
+  // Validate username one more time before submission (prevent race conditions)
+  try {
+    const usernameCheckResponse = await fetch(usernameCheckEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: username }),
+    });
+
+    const usernameCheckData = await usernameCheckResponse.json();
+
+    if (!usernameCheckData.available) {
+      setRegisterMessage(usernameCheckData.message || "This username is no longer available.", "danger");
+      return;
+    }
+  } catch (error) {
+    console.error('Username validation error:', error);
+    setRegisterMessage("We could not verify your username availability. Please try again.", "danger");
+    return;
+  }
+
   registerForm.classList.add("was-validated");
   registerSubmitButton.disabled = true;
   registerSubmitButton.textContent = "Creating Account...";
@@ -165,7 +215,7 @@ registerForm?.addEventListener("submit", async (event) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        username: document.getElementById("registerUsername").value.trim(),
+        username: username,
         email: document.getElementById("registerEmail").value.trim(),
         password,
         first_name: document.getElementById("registerFirstName").value.trim(),
