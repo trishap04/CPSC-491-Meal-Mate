@@ -108,5 +108,35 @@ settingsForm?.addEventListener("submit", async (event) => {
   }
 });
 
+// Handle account deletion
+async function handleDeleteAccount() {
+  if (
+    !confirm(
+      "Are you absolutely sure you want to delete your account? This action cannot be undone."
+    )
+  ) {
+    return;
+  }
+
+  try {
+    await apiFetch(deleteAccountEndpoint, {
+      method: "DELETE",
+    });
+
+    // Cleanup and redirect
+    localStorage.removeItem("mealmate_access_token");
+    localStorage.removeItem("mealmate_refresh_token");
+    window.location.href = "index.html";
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    alert(error.message || "Failed to delete account. Please try again.");
+  }
+}
+
+// Attach delete button listener
+document
+  .getElementById("deleteAccountButton")
+  ?.addEventListener("click", handleDeleteAccount);
+
 // Load profile on page load
 document.addEventListener("DOMContentLoaded", loadUserProfile);
