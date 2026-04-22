@@ -185,6 +185,18 @@ class ChangePasswordView(APIView):
         }, status=status.HTTP_200_OK)
 
 
+class DeleteAccountView(APIView):
+    """API to allow users to delete their own account"""
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        user.delete()
+        return Response({
+            "message": "Account deleted successfully."
+        }, status=status.HTTP_204_NO_CONTENT)
+
+
 class UserProfileView(APIView):
     """API to retrieve current user's profile"""
     permission_classes = [IsAuthenticated]

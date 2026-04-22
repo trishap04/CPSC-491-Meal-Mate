@@ -11,7 +11,8 @@ from .views import (
     FoodSearchView,
     FoodListView,
     DonationCreateView,
-    DonationDetailView
+    DonationDetailView,
+    DeleteAccountView
 )
 
 urlpatterns = [
@@ -27,4 +28,5 @@ urlpatterns = [
     path('api/foods/', FoodListView.as_view(), name='food-list'),
     path('api/donations/', DonationCreateView.as_view(), name='donation-create'),
     path('api/donations/<int:donation_id>/', DonationDetailView.as_view(), name='donation-detail'),
+    path('delete-account/', DeleteAccountView.as_view(), name='delete-account'),
 ]

@@ -13,6 +13,11 @@ const updateProfileEndpoint =
     ? "http://127.0.0.1:8000/api/users/profile/update/"
     : "/api/users/profile/update/";
 
+const deleteAccountEndpoint =
+  window.location.port === "5500"
+    ? "http://127.0.0.1:8000/api/users/delete-account/"
+    : "/api/users/delete-account/";
+
 // Get authentication token from localStorage or sessionStorage
 function getAuthToken() {
   return localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
@@ -30,6 +35,22 @@ function showSettingsMessage(message, type) {
 function resetSettingsMessage() {
   settingsMessage.textContent = "";
   settingsMessage.className = "alert d-none";
+}
+
+// Get cookie helper for CSRF
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === name + "=") {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
 }
 
 // Load user profile data
@@ -164,6 +185,51 @@ settingsForm?.addEventListener("submit", async (event) => {
     settingsSubmitButton.textContent = "Save Changes";
   }
 });
+
+// Handle account deletion
+async function handleDeleteAccount() {
+  if (
+    !confirm(
+      "Are you absolutely sure you want to delete your account? This action cannot be undone."
+    )
+  ) {
+    return;
+  }
+
+  const token = getAuthToken();
+  const csrfToken = getCookie("csrftoken");
+
+  try {
+    const headers = {
+      Authorization: `Bearer ${token}`,
+    };
+    if (csrfToken) {
+      headers["X-CSRFToken"] = csrfToken;
+    }
+
+    const response = await fetch(deleteAccountEndpoint, {
+      method: "DELETE",
+      headers: headers,
+    });
+
+    if (response.status === 204) {
+      localStorage.removeItem("authToken");
+      sessionStorage.removeItem("authToken");
+      window.location.href = "index.html";
+    } else {
+      const data = await response.json().catch(() => ({}));
+      alert(data.error || "Failed to delete account. Please try again.");
+    }
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    alert("An error occurred. Please try again.");
+  }
+}
+
+// Attach delete button listener
+document
+  .getElementById("deleteAccountButton")
+  ?.addEventListener("click", handleDeleteAccount);
 
 // Load profile on page load
 document.addEventListener("DOMContentLoaded", loadUserProfile);
