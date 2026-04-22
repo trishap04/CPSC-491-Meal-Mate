@@ -71,6 +71,19 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     new_password = serializers.CharField(min_length=8)
 
 
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(min_length=8, write_only=True)
+    new_password = serializers.CharField(min_length=8, write_only=True)
+    confirm_password = serializers.CharField(min_length=8, write_only=True)
+
+    def validate(self, data):
+        if data['new_password'] != data['confirm_password']:
+            raise serializers.ValidationError({
+                'confirm_password': 'The new password and confirmation do not match.'
+            })
+        return data
+
+
 class UserProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
     email = serializers.CharField(source='user.email', read_only=True)
