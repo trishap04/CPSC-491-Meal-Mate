@@ -11,12 +11,21 @@ const forgotPasswordEndpoint =
 function setForgotPasswordMessage(message, type) {
   forgotPasswordMessage.textContent = message;
   forgotPasswordMessage.className = `alert alert-${type}`;
+  forgotPasswordMessage.classList.remove('d-none');
+  forgotPasswordMessage.style.display = 'block';
+  // Scroll to message
+  forgotPasswordMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function resetMessage() {
+  forgotPasswordMessage.textContent = "";
+  forgotPasswordMessage.className = "alert d-none";
 }
 
 forgotPasswordForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
+  resetMessage();
   resetLinkContainer.classList.add("d-none");
-  forgotPasswordMessage.className = "alert d-none";
 
   if (!forgotPasswordForm.checkValidity()) {
     forgotPasswordForm.classList.add("was-validated");
@@ -26,7 +35,9 @@ forgotPasswordForm?.addEventListener("submit", async (event) => {
 
   forgotPasswordForm.classList.add("was-validated");
   forgotPasswordSubmitButton.disabled = true;
-  forgotPasswordSubmitButton.textContent = "Generating...";
+  forgotPasswordSubmitButton.textContent = "Generating link...";
+
+  const email = document.getElementById("resetEmail").value.trim();
 
   try {
     const response = await fetch(forgotPasswordEndpoint, {
@@ -34,31 +45,47 @@ forgotPasswordForm?.addEventListener("submit", async (event) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        email: document.getElementById("resetEmail").value.trim(),
-      }),
+      body: JSON.stringify({ email }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
       const errors = Object.values(data).flat().join(" ");
-      setForgotPasswordMessage(errors || "Unable to create reset link.", "danger");
+      setForgotPasswordMessage(
+        errors || "Unable to create reset link. Please check your email and try again.",
+        "danger"
+      );
       return;
     }
 
-    setForgotPasswordMessage(data.message || "Reset link created.", "success");
+    setForgotPasswordMessage(
+      "Reset link generated! Check the instructions below.",
+      "success"
+    );
 
     if (data.reset_url) {
       const destination = window.location.port === "5500"
         ? `http://127.0.0.1:8000${data.reset_url}`
         : data.reset_url;
       resetLink.href = destination;
-      resetLink.textContent = destination;
+      resetLink.textContent = "Open Password Reset Page";
       resetLinkContainer.classList.remove("d-none");
+      
+      // For development - show full URL as alternative
+      if (window.location.port === "5500") {
+        resetLink.textContent = destination;
+      }
     }
+
+    // Clear form
+    forgotPasswordForm.reset();
+    forgotPasswordForm.classList.remove("was-validated");
   } catch (error) {
-    setForgotPasswordMessage("We could not reach the server. Please try again.", "danger");
+    setForgotPasswordMessage(
+      "We could not reach the server. Please try again in a moment.",
+      "danger"
+    );
   } finally {
     forgotPasswordSubmitButton.disabled = false;
     forgotPasswordSubmitButton.textContent = "Generate Reset Link";
