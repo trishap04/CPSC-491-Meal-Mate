@@ -8,7 +8,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from .serializers import (
     RegisterSerializer,
     PasswordResetRequestSerializer,
@@ -22,9 +22,10 @@ from .serializers import (
 )
 from .models import Food, FoodCategory, Donation, DonationItem, UserProfile
 from django.db.models import Q
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_protect, name='dispatch')
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
@@ -32,8 +33,11 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
+            refresh = RefreshToken.for_user(user)
             return Response({
                 "message": "User registered successfully!",
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
                 "user": {
                     "id": user.id,
                     "username": user.username,
@@ -43,7 +47,7 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_protect, name='dispatch')
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -74,10 +78,12 @@ class LoginView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        login(request, user)
+        refresh = RefreshToken.for_user(user)
         return Response({
             'message': 'Login successful. Redirecting you home.',
             'redirect_url': '/index.html',
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
             'user': {
                 'id': user.id,
                 'username': user.username,
@@ -86,7 +92,33 @@ class LoginView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data.get("refresh")
+            if not refresh_token:
+                return Response({"error": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            return Response({"message": "Successfully logged out."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DeleteAccountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        user.delete()
+        return Response({"message": "Account deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+
+@method_decorator(csrf_protect, name='dispatch')
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
 
@@ -112,7 +144,7 @@ class PasswordResetRequestView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_protect, name='dispatch')
 class PasswordResetConfirmView(APIView):
     permission_classes = [AllowAny]
 
@@ -148,7 +180,6 @@ class PasswordResetConfirmView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class ChangePasswordView(APIView):
     """API to allow authenticated users to change their password"""
     permission_classes = [IsAuthenticated]
@@ -201,7 +232,6 @@ class UserProfileView(APIView):
             )
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class UpdateUserProfileView(APIView):
     """API to update user's profile (first name and last name)"""
     permission_classes = [IsAuthenticated]
