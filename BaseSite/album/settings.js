@@ -2,6 +2,8 @@ const settingsForm = document.getElementById("settingsForm");
 const settingsMessage = document.getElementById("settingsMessage");
 const loadingSpinner = document.getElementById("loadingSpinner");
 const settingsSubmitButton = document.getElementById("settingsSubmitButton");
+const logoutButton = document.getElementById("logoutButton");
+const deleteAccountButton = document.getElementById("deleteAccountButton");
 
 const profileEndpoint =
   window.location.port === "5500"
@@ -13,10 +15,15 @@ const updateProfileEndpoint =
     ? "http://127.0.0.1:8000/api/users/profile/update/"
     : "/api/users/profile/update/";
 
-// Get authentication token from localStorage or sessionStorage
-function getAuthToken() {
-  return localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-}
+const logoutEndpoint =
+  window.location.port === "5500"
+    ? "http://127.0.0.1:8000/api/users/logout/"
+    : "/api/users/logout/";
+
+const deleteAccountEndpoint =
+  window.location.port === "5500"
+    ? "http://127.0.0.1:8000/api/users/delete-account/"
+    : "/api/users/delete-account/";
 
 // Show message
 function showSettingsMessage(message, type) {
@@ -34,54 +41,26 @@ function resetSettingsMessage() {
 
 // Load user profile data
 async function loadUserProfile() {
-  const token = getAuthToken();
-
-  if (!token) {
-    showSettingsMessage(
-      "You must be logged in to access account settings.",
-      "danger"
-    );
-    setTimeout(() => {
-      window.location.href = "login.html";
-    }, 1500);
-    return;
-  }
-
   try {
-    const response = await fetch(profileEndpoint, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to load profile");
-    }
-
-    const profileData = await response.json();
+    const profileData = await apiFetch(profileEndpoint);
 
     // Populate form fields
-    document.getElementById("settingsUsername").value =
-      profileData.username || "";
+    document.getElementById("settingsUsername").value = profileData.username || "";
     document.getElementById("settingsEmail").value = profileData.email || "";
-    document.getElementById("settingsFirstName").value =
-      profileData.first_name || "";
-    document.getElementById("settingsLastName").value =
-      profileData.last_name || "";
+    document.getElementById("settingsFirstName").value = profileData.first_name || "";
+    document.getElementById("settingsLastName").value = profileData.last_name || "";
     document.getElementById("settingsRole").value =
-      profileData.role?.charAt(0).toUpperCase() +
-        profileData.role?.slice(1) || "";
+      profileData.role?.charAt(0).toUpperCase() + profileData.role?.slice(1) || "";
 
     // Hide loading spinner and show form
     loadingSpinner.classList.add("d-none");
     settingsForm.classList.remove("d-none");
   } catch (error) {
-    showSettingsMessage(
-      "Unable to load your profile. Please try again.",
-      "danger"
-    );
+    if (error.message.includes("Login required") || error.message.includes("401")) {
+      window.location.href = "login.html";
+      return;
+    }
+    showSettingsMessage("Unable to load your profile. Please try again.", "danger");
     loadingSpinner.classList.add("d-none");
   }
 }
@@ -94,17 +73,7 @@ settingsForm?.addEventListener("submit", async (event) => {
   if (!settingsForm.checkValidity()) {
     event.stopPropagation();
     settingsForm.classList.add("was-validated");
-    showSettingsMessage(
-      "Please correct the highlighted fields and try again.",
-      "danger"
-    );
-    return;
-  }
-
-  const token = getAuthToken();
-
-  if (!token) {
-    showSettingsMessage("Authentication token not found. Please log in again.", "danger");
+    showSettingsMessage("Please correct the highlighted fields and try again.", "danger");
     return;
   }
 
@@ -116,36 +85,13 @@ settingsForm?.addEventListener("submit", async (event) => {
   const lastName = document.getElementById("settingsLastName").value.trim();
 
   try {
-    const response = await fetch(updateProfileEndpoint, {
+    await apiFetch(updateProfileEndpoint, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
       body: JSON.stringify({
         first_name: firstName,
         last_name: lastName,
       }),
     });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        showSettingsMessage(
-          "Your session has expired. Please log in again.",
-          "danger"
-        );
-        setTimeout(() => {
-          window.location.href = "login.html";
-        }, 1500);
-        return;
-      }
-
-      throw new Error(
-        data.error || "Failed to update profile"
-      );
-    }
 
     showSettingsMessage("Your profile has been updated successfully!", "success");
     settingsForm.classList.remove("was-validated");
@@ -155,15 +101,60 @@ settingsForm?.addEventListener("submit", async (event) => {
       loadUserProfile();
     }, 1000);
   } catch (error) {
-    showSettingsMessage(
-      error.message || "We could not save your changes. Please try again.",
-      "danger"
-    );
+    showSettingsMessage(error.message || "We could not save your changes.", "danger");
   } finally {
     settingsSubmitButton.disabled = false;
     settingsSubmitButton.textContent = "Save Changes";
   }
 });
+
+// Handle logout
+async function handleLogout() {
+  if (!confirm("Are you sure you want to log out?")) return;
+
+  try {
+    const refreshToken = localStorage.getItem("mealmate_refresh_token");
+    await apiFetch(logoutEndpoint, {
+      method: "POST",
+      body: JSON.stringify({ refresh: refreshToken }),
+    });
+  } catch (error) {
+    console.error("Logout error:", error);
+  } finally {
+    localStorage.removeItem("mealmate_access_token");
+    localStorage.removeItem("mealmate_refresh_token");
+    window.location.href = "login.html";
+  }
+}
+
+// Handle account deletion
+async function handleDeleteAccount() {
+  if (
+    !confirm(
+      "Are you absolutely sure you want to delete your account? This action cannot be undone."
+    )
+  ) {
+    return;
+  }
+
+  try {
+    await apiFetch(deleteAccountEndpoint, {
+      method: "DELETE",
+    });
+
+    // Cleanup and redirect
+    localStorage.removeItem("mealmate_access_token");
+    localStorage.removeItem("mealmate_refresh_token");
+    window.location.href = "index.html";
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    alert(error.message || "Failed to delete account. Please try again.");
+  }
+}
+
+// Event Listeners
+logoutButton?.addEventListener("click", handleLogout);
+deleteAccountButton?.addEventListener("click", handleDeleteAccount);
 
 // Load profile on page load
 document.addEventListener("DOMContentLoaded", loadUserProfile);
