@@ -73,8 +73,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-# Serve frontend assets from the BaseSite album folder
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/assets/'
 STATICFILES_DIRS = [
+    BASE_DIR.parent / 'BaseSite' / 'assets',
     BASE_DIR.parent / 'BaseSite' / 'album',
 ]
 
@@ -121,13 +123,6 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
-STATIC_URL = '/assets/'
-STATICFILES_DIRS = [
-    BASE_DIR.parent / 'BaseSite' / 'assets',
-]
 
 # CORS Configuration for allowing Frontend access
 CORS_ALLOW_ALL_ORIGINS = True

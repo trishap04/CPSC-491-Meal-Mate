@@ -184,12 +184,18 @@ registerForm?.addEventListener("submit", async (event) => {
       return;
     }
 
-    setRegisterMessage(data.message || "Account created successfully. Redirecting to login...", "success");
+    setRegisterMessage(data.message || "Account created successfully. Logging you in...", "success");
+    
+    // Save JWT tokens for automatic login
+    if (data.access && data.refresh) {
+      setTokens(data.access, data.refresh);
+    }
+
     registerForm.reset();
     registerForm.classList.remove("was-validated");
     strengthMeter.style.width = '0%';
     setTimeout(() => {
-      window.location.href = "login.html";
+      window.location.href = "index.html";
     }, 1500);
   } catch (error) {
     setRegisterMessage("We could not reach the server. Please try again.", "danger");
