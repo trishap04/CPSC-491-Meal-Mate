@@ -22,6 +22,7 @@ from .serializers import (
 )
 from .models import Food, FoodCategory, Donation, DonationItem, UserProfile
 from django.db.models import Q
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -32,8 +33,11 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
+            refresh = RefreshToken.for_user(user)
             return Response({
                 "message": "User registered successfully!",
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
                 "user": {
                     "id": user.id,
                     "username": user.username,
@@ -74,10 +78,12 @@ class LoginView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        login(request, user)
+        refresh = RefreshToken.for_user(user)
         return Response({
             'message': 'Login successful. Redirecting you home.',
             'redirect_url': '/index.html',
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
             'user': {
                 'id': user.id,
                 'username': user.username,

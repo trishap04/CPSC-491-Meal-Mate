@@ -1,4 +1,5 @@
 from django.urls import path
+from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     RegisterView,
     LoginView,
@@ -27,4 +28,5 @@ urlpatterns = [
     path('api/foods/', FoodListView.as_view(), name='food-list'),
     path('api/donations/', DonationCreateView.as_view(), name='donation-create'),
     path('api/donations/<int:donation_id>/', DonationDetailView.as_view(), name='donation-detail'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
