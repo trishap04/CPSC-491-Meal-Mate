@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.tokens import default_token_generator
@@ -13,11 +13,13 @@ from .serializers import (
     RegisterSerializer,
     PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer,
+    UserProfileSerializer,
+    UpdateUserProfileSerializer,
     FoodSerializer,
     FoodCategorySerializer,
     DonationSerializer,
 )
-from .models import Food, FoodCategory, Donation, DonationItem
+from .models import Food, FoodCategory, Donation, DonationItem, UserProfile
 from django.db.models import Q
 
 
@@ -143,6 +145,56 @@ class PasswordResetConfirmView(APIView):
             'message': 'Password updated successfully. You can now log in.',
             'redirect_url': '/login.html',
         }, status=status.HTTP_200_OK)
+
+
+class UserProfileView(APIView):
+    """API to retrieve current user's profile"""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            user_profile = UserProfile.objects.get(user=request.user)
+            serializer = UserProfileSerializer(user_profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except UserProfile.DoesNotExist:
+            return Response(
+                {'error': 'User profile not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UpdateUserProfileView(APIView):
+    """API to update user's profile (first name and last name)"""
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        try:
+            user_profile = UserProfile.objects.get(user=request.user)
+        except UserProfile.DoesNotExist:
+            return Response(
+                {'error': 'User profile not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = UpdateUserProfileSerializer(user_profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            
+            # Also update the User model's first_name and last_name for consistency
+            user = request.user
+            if 'first_name' in request.data:
+                user.first_name = request.data['first_name']
+            if 'last_name' in request.data:
+                user.last_name = request.data['last_name']
+            user.save()
+            
+            return Response({
+                'message': 'Profile updated successfully.',
+                'profile': UserProfileSerializer(user_profile).data
+            }, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class FoodCategoryView(APIView):

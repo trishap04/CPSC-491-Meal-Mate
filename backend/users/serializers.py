@@ -71,6 +71,26 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     new_password = serializers.CharField(min_length=8)
 
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    email = serializers.CharField(source='user.email', read_only=True)
+    
+    class Meta:
+        model = UserProfile
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone_number', 'bio', 'role', 'email_verified', 'created_at']
+        read_only_fields = ['id', 'username', 'email', 'role', 'email_verified', 'created_at']
+
+
+class UpdateUserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['first_name', 'last_name']
+        extra_kwargs = {
+            'first_name': {'required': False, 'allow_blank': True},
+            'last_name': {'required': False, 'allow_blank': True}
+        }
+
+
 class FoodCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = FoodCategory
