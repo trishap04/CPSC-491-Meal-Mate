@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Manage your Meal Mate account settings." />
+  <link rel="shortcut icon" href="../assets/images/mealmate-high-resolution-logo-grayscale-transparent.png"
+    type="image/x-icon" />
+  <title>Meal Mate Account Settings</title>
+  <script src="../assets/js/color-modes.js"></script>
+  <link href="../assets/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="settings.css" rel="stylesheet" />
+</head>
+
+<body class="settings-page">
+  <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
+    <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center" id="bd-theme"
+      type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme">
+      Theme
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme">
+      <li><button type="button" class="dropdown-item" data-bs-theme-value="light">Light</button></li>
+      <li><button type="button" class="dropdown-item" data-bs-theme-value="dark">Dark</button></li>
+      <li><button type="button" class="dropdown-item active" data-bs-theme-value="auto">Auto</button></li>
+    </ul>
+  </div>
+
+  <main class="settings-shell">
+    <section class="settings-card shadow-lg">
+      <div class="brand-panel">
+        <a href="index.html" class="brand-link">Back to home</a>
+        <img src="../assets/images/mealmate-high-resolution-logo-transparent.png" alt="Meal Mate logo"
+          class="brand-logo" />
+        <p class="eyebrow">Meal Mate</p>
+        <h1>Account Settings</h1>
+        <p class="brand-copy">
+          Update your profile information and manage your Meal Mate account details.
+        </p>
+      </div>
+
+      <div class="form-panel">
+        <div class="form-header">
+          <p class="form-kicker">Account Management</p>
+          <h2>Settings</h2>
+          <p class="form-subtitle">Modify your account information below.</p>
+        </div>
+
+        <div id="settingsMessage" class="alert d-none" role="alert" aria-live="polite"></div>
+
+        <!-- Loading State -->
+        <div id="loadingSpinner" class="text-center">
+          <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
+        <!-- Settings Form -->
+        <form id="settingsForm" class="d-none" novalidate>
+          <div class="form-section">
+            <h3 class="section-title">Personal Information</h3>
+
+            <div class="mb-3">
+              <label for="settingsUsername" class="form-label">Username</label>
+              <input type="text" class="form-control" id="settingsUsername" name="username"
+                placeholder="Your username" disabled readonly />
+              <small class="text-muted">Your username cannot be changed.</small>
+            </div>
+
+            <div class="mb-3">
+              <label for="settingsEmail" class="form-label">Email</label>
+              <input type="email" class="form-control" id="settingsEmail" name="email"
+                placeholder="Your email" disabled readonly />
+              <small class="text-muted">Your email cannot be changed here.</small>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="settingsFirstName" class="form-label">First Name</label>
+                <input type="text" class="form-control" id="settingsFirstName" name="first_name"
+                  placeholder="Enter your first name" />
+                <div class="invalid-feedback">Please enter a valid first name.</div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label for="settingsLastName" class="form-label">Last Name</label>
+                <input type="text" class="form-control" id="settingsLastName" name="last_name"
+                  placeholder="Enter your last name" />
+                <div class="invalid-feedback">Please enter a valid last name.</div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="settingsRole" class="form-label">Account Type</label>
+              <input type="text" class="form-control" id="settingsRole" name="role"
+                placeholder="Your account type" disabled readonly />
+              <small class="text-muted">Contact support to change your account type.</small>
+            </div>
+          </div>
+
+          <div class="button-group">
+            <button type="submit" id="settingsSubmitButton" class="btn btn-primary settings-button">
+              Save Changes
+            </button>
+            <a href="index.html" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="settings.js"></script>
+</body>
+
+</html>
