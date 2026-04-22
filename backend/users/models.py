@@ -64,6 +64,9 @@ class Donation(models.Model):
         ('leave', 'Leave at door'),
     ]
     
+    # Ownership (PII Minimization: link to user instead of storing duplicate info)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='donations')
+    
     # Donor info
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)

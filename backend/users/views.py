@@ -311,6 +311,7 @@ class FoodListView(APIView):
         return Response(serializer.data)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class DonationCreateView(APIView):
     """API to create a new donation with items"""
     def post(self, request):
@@ -327,6 +328,9 @@ class DonationCreateView(APIView):
             }
             
             # Create donation
+            if request.user.is_authenticated:
+                donation_data['user'] = request.user
+            
             donation = Donation.objects.create(**donation_data)
             
             # Extract and create donation items
@@ -361,11 +365,20 @@ class DonationCreateView(APIView):
             )
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class DonationDetailView(APIView):
     """API to retrieve donation details"""
     def get(self, request, donation_id):
         try:
             donation = Donation.objects.get(id=donation_id)
+            
+            # PII Minimization Audit: Only owner or staff can view full PII
+            if donation.user and donation.user != request.user and not request.user.is_staff:
+                return Response(
+                    {'error': 'You do not have permission to view this donation.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
             serializer = DonationSerializer(donation)
             return Response(serializer.data)
         except Donation.DoesNotExist:
