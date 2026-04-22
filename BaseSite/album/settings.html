@@ -5,12 +5,71 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Manage your Meal Mate account settings." />
-  <link rel="shortcut icon" href="../assets/images/mealmate-high-resolution-logo-grayscale-transparent.png"
+  <link rel="shortcut icon" href="/assets/images/mealmate-high-resolution-logo-grayscale-transparent.png"
     type="image/x-icon" />
   <title>Meal Mate Account Settings</title>
-  <script src="../assets/js/color-modes.js"></script>
-  <link href="../assets/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="settings.css" rel="stylesheet" />
+  <script src="/assets/js/color-modes.js"></script>
+  <link href="/assets/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="/assets/settings.css" rel="stylesheet" />
+  <script>
+    // Critical Security Functions - Defined in Head for instant availability
+    async function handleLogout(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      if (!confirm("Are you sure you want to log out?")) return false;
+      
+      const token = localStorage.getItem("mealmate_access_token");
+      const refreshToken = localStorage.getItem("mealmate_refresh_token");
+      
+      localStorage.removeItem("mealmate_access_token");
+      localStorage.removeItem("mealmate_refresh_token");
+      
+      try {
+        const logoutEndpoint = window.location.port === "8000" ? "/api/users/logout/" : "http://127.0.0.1:8000/api/users/logout/";
+        await fetch(logoutEndpoint, {
+          method: "POST",
+          headers: { 
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ refresh: refreshToken })
+        });
+      } catch (err) { console.log(err); }
+      
+      window.location.href = "login.html";
+      return false;
+    }
+
+    async function handleDeleteAccount(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      if (!confirm("WARNING: Permanent deletion. Are you sure?")) return false;
+      
+      const token = localStorage.getItem("mealmate_access_token");
+      try {
+        const deleteEndpoint = window.location.port === "8000" ? "/api/users/delete-account/" : "http://127.0.0.1:8000/api/users/delete-account/";
+        const response = await fetch(deleteEndpoint, {
+          method: "DELETE",
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          document.getElementById("settingsForm").classList.add("d-none");
+          document.getElementById("securitySection").classList.add("d-none");
+          alert("Your account has been deleted. Goodbye!");
+          localStorage.clear();
+          window.location.href = "register.html";
+        } else {
+          alert("Delete failed. Please try again.");
+        }
+      } catch (err) { alert("Error: " + err.message); }
+      return false;
+    }
+  </script>
 </head>
 
 <body class="settings-page">
@@ -30,7 +89,7 @@
     <section class="settings-card shadow-lg">
       <div class="brand-panel">
         <a href="index.html" class="brand-link">Back to home</a>
-        <img src="../assets/images/mealmate-high-resolution-logo-transparent.png" alt="Meal Mate logo"
+        <img src="/assets/images/mealmate-high-resolution-logo-transparent.png" alt="Meal Mate logo"
           class="brand-logo" />
         <p class="eyebrow">Meal Mate</p>
         <h1>Account Settings</h1>
@@ -98,19 +157,28 @@
             </div>
           </div>
 
-          <div class="button-group">
-            <button type="submit" id="settingsSubmitButton" class="btn btn-primary settings-button">
-              Save Changes
-            </button>
-            <a href="index.html" class="btn btn-outline-secondary">Cancel</a>
-          </div>
         </form>
+
+        <div id="securitySection" class="form-section mt-5 border-top pt-4">
+          <h3 class="section-title text-danger">Security & Danger Zone</h3>
+          <p class="text-muted small">Manage your session or permanently remove your account.</p>
+          
+          <div class="d-flex flex-column gap-2 mt-3">
+            <a href="javascript:void(0)" id="logoutButton" class="btn btn-outline-primary" onclick="handleLogout(event)">
+              Logout
+            </a>
+            <a href="javascript:void(0)" id="deleteAccountButton" class="btn btn-danger" onclick="handleDeleteAccount(event)">
+              Delete Account
+            </a>
+          </div>
+        </div>
       </div>
     </section>
   </main>
 
-  <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="settings.js"></script>
+  <script src="/assets/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/assets/api.js"></script>
+  <script src="/assets/settings.js"></script>
 </body>
 
 </html>

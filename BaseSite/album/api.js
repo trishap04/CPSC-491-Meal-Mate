@@ -93,9 +93,6 @@ async function apiFetch(endpoint, options = {}) {
             const refreshToken = getRefreshToken();
             
             if (refreshToken) {
-                console.log("Access token expired, attempting refresh...");
-                
-                // Try to refresh the token
                 const refreshResponse = await fetch(`${API_BASE_URL}/api/users/token/refresh/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -104,21 +101,29 @@ async function apiFetch(endpoint, options = {}) {
 
                 if (refreshResponse.ok) {
                     const data = await refreshResponse.json();
-                    setTokens(data.access, data.refresh); // Rotate tokens
+                    setTokens(data.access, data.refresh);
                     
-                    // Retry the original request with the new token
                     options.headers['Authorization'] = `Bearer ${data.access}`;
-                    return await fetch(url, options);
+                    response = await fetch(url, options);
                 } else {
-                    // Refresh failed, log user out
-                    console.error("Refresh token expired or invalid. Logging out.");
                     clearTokens();
                     window.location.href = '/login.html';
+                    throw new Error("Login required");
                 }
             }
         }
 
-        return response;
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || errorData.detail || `Error: ${response.status}`);
+        }
+
+        // Handle 204 No Content
+        if (response.status === 204) {
+            return null;
+        }
+
+        return await response.json();
     } catch (error) {
         console.error("API Fetch Error:", error);
         throw error;
