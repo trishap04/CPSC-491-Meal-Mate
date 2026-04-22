@@ -289,12 +289,23 @@ class UserProfileView(APIView):
 
 
 class UpdateUserProfileView(APIView):
-    """API to update user's profile (first name and last name)"""
+    """
+    API to update user's profile information securely with transaction handling
+    
+    Handles:
+    - Personal information (first name, last name)
+    - Contact details (phone number, address)
+    - Profile customization (bio, picture)
+    - Location information (city, state, zip)
+    - Communication preferences (marketing emails)
+    
+    Ensures consistency between User and UserProfile models via transaction.
+    """
     permission_classes = [IsAuthenticated]
 
     def patch(self, request):
         try:
-            user_profile = UserProfile.objects.get(user=request.user)
+            user_profile = UserProfile.objects.select_for_update().get(user=request.user)
         except UserProfile.DoesNotExist:
             return Response(
                 {'error': 'User profile not found.'},
@@ -302,23 +313,38 @@ class UpdateUserProfileView(APIView):
             )
 
         serializer = UpdateUserProfileSerializer(user_profile, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            from django.db import transaction
             
-            # Also update the User model's first_name and last_name for consistency
-            user = request.user
-            if 'first_name' in request.data:
-                user.first_name = request.data['first_name']
-            if 'last_name' in request.data:
-                user.last_name = request.data['last_name']
-            user.save()
+            # Use atomic transaction to ensure data consistency
+            with transaction.atomic():
+                # Update the profile
+                updated_profile = serializer.save()
+                
+                # Also update the User model's first_name and last_name for consistency
+                user = request.user
+                if 'first_name' in request.data:
+                    user.first_name = request.data['first_name']
+                if 'last_name' in request.data:
+                    user.last_name = request.data['last_name']
+                user.save()
+                
+                # Refresh the profile to get the updated audit fields
+                updated_profile.refresh_from_db()
             
             return Response({
                 'message': 'Profile updated successfully.',
-                'profile': UserProfileSerializer(user_profile).data
+                'profile': UserProfileSerializer(updated_profile).data
             }, status=status.HTTP_200_OK)
         
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to update profile: {str(e)}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class FoodCategoryView(APIView):

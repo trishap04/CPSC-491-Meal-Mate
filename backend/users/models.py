@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import RegexValidator
+from django.utils import timezone
 
 class UserProfile(models.Model):
     ROLE_CHOICES = [
@@ -8,19 +10,107 @@ class UserProfile(models.Model):
         ('organization', 'Organization'),
     ]
     
+    # Account Information
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     first_name = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100, blank=True, null=True)
-    phone_number = models.CharField(max_length=20, blank=True, null=True)
-    bio = models.TextField(blank=True, null=True)
-    role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='donor')
+    
+    # Contact Information
+    phone_number = models.CharField(
+        max_length=20, 
+        blank=True, 
+        null=True,
+        validators=[
+            RegexValidator(
+                regex=r'^\+?1?\d{9,15}$',
+                message='Phone number must be 9-15 digits and may start with + and country code.',
+                code='invalid_phone'
+            )
+        ]
+    )
+    phone_verified = models.BooleanField(default=False)
+    
+    # Profile Information
+    bio = models.TextField(blank=True, null=True, max_length=500)
+    profile_picture = models.URLField(blank=True, null=True)
+    
+    # Address Information
+    address = models.TextField(blank=True, null=True, max_length=255)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    state = models.CharField(max_length=50, blank=True, null=True)
+    zip_code = models.CharField(max_length=20, blank=True, null=True)
+    
+    # Account Settings
+    role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='donor', db_index=True)
     email_verified = models.BooleanField(default=False)
     terms_accepted = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+    marketing_emails = models.BooleanField(default=False)
+    
+    # Account Security & Activity
+    last_login = models.DateTimeField(null=True, blank=True)
+    failed_login_attempts = models.IntegerField(default=0)
+    account_locked = models.BooleanField(default=False)
+    account_locked_until = models.DateTimeField(null=True, blank=True)
+    
+    # Account Timestamps
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # Audit Information
+    last_modified_by = models.CharField(max_length=50, default='system')  # 'user', 'system', 'admin'
+    last_modified_reason = models.CharField(max_length=255, blank=True, null=True)  # 'profile_edit', 'password_reset', etc.
+
+    class Meta:
+        db_table = 'users_userprofile'
+        indexes = [
+            models.Index(fields=['user', 'created_at']),
+            models.Index(fields=['role', 'email_verified']),
+        ]
+        verbose_name = 'User Profile'
+        verbose_name_plural = 'User Profiles'
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
+    
+    def lock_account(self, duration_minutes=30):
+        """Lock account after failed login attempts"""
+        from datetime import timedelta
+        self.account_locked = True
+        self.account_locked_until = timezone.now() + timedelta(minutes=duration_minutes)
+        self.save()
+    
+    def unlock_account(self):
+        """Unlock account"""
+        self.account_locked = False
+        self.account_locked_until = None
+        self.failed_login_attempts = 0
+        self.save()
+    
+    def increment_failed_login(self):
+        """Increment failed login counter and lock if threshold reached"""
+        self.failed_login_attempts += 1
+        if self.failed_login_attempts >= 5:
+            self.lock_account()
+        else:
+            self.save()
+    
+    def reset_failed_login(self):
+        """Reset failed login counter on successful login"""
+        self.failed_login_attempts = 0
+        self.last_login = timezone.now()
+        self.save()
+    
+    def is_account_locked(self):
+        """Check if account is currently locked"""
+        if not self.account_locked:
+            return False
+        
+        # Unlock if lockout period has passed
+        if self.account_locked_until and timezone.now() > self.account_locked_until:
+            self.unlock_account()
+            return False
+        
+        return True
 
 
 class FoodCategory(models.Model):
