@@ -8,7 +8,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from .serializers import (
     RegisterSerializer,
     PasswordResetRequestSerializer,
@@ -25,7 +25,7 @@ from django.db.models import Q
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_protect, name='dispatch')
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
@@ -47,7 +47,7 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_protect, name='dispatch')
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -92,7 +92,6 @@ class LoginView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -110,7 +109,6 @@ class LogoutView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class DeleteAccountView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -120,7 +118,7 @@ class DeleteAccountView(APIView):
         return Response({"message": "Account deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_protect, name='dispatch')
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
 
@@ -146,7 +144,7 @@ class PasswordResetRequestView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_protect, name='dispatch')
 class PasswordResetConfirmView(APIView):
     permission_classes = [AllowAny]
 
@@ -182,7 +180,6 @@ class PasswordResetConfirmView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class ChangePasswordView(APIView):
     """API to allow authenticated users to change their password"""
     permission_classes = [IsAuthenticated]
@@ -235,7 +232,6 @@ class UserProfileView(APIView):
             )
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class UpdateUserProfileView(APIView):
     """API to update user's profile (first name and last name)"""
     permission_classes = [IsAuthenticated]
