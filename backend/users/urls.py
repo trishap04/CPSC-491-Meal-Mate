@@ -1,7 +1,10 @@
 from django.urls import path
+from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     RegisterView,
     LoginView,
+    LogoutView,
+    DeleteAccountView,
     PasswordResetRequestView,
     PasswordResetConfirmView,
     ChangePasswordView,
@@ -11,13 +14,14 @@ from .views import (
     FoodSearchView,
     FoodListView,
     DonationCreateView,
-    DonationDetailView,
-    DeleteAccountView
+    DonationDetailView
 )
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', LoginView.as_view(), name='login'),
+    path('logout/', LogoutView.as_view(), name='logout'),
+    path('delete-account/', DeleteAccountView.as_view(), name='delete-account'),
     path('password-reset/request/', PasswordResetRequestView.as_view(), name='password_reset_request'),
     path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('change-password/', ChangePasswordView.as_view(), name='change-password'),
@@ -28,5 +32,5 @@ urlpatterns = [
     path('api/foods/', FoodListView.as_view(), name='food-list'),
     path('api/donations/', DonationCreateView.as_view(), name='donation-create'),
     path('api/donations/<int:donation_id>/', DonationDetailView.as_view(), name='donation-detail'),
-    path('delete-account/', DeleteAccountView.as_view(), name='delete-account'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

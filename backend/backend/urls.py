@@ -19,14 +19,15 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 urlpatterns = [
-    path('', TemplateView.as_view(template_name='album/index.html'), name='home'),
-    path('index.html', TemplateView.as_view(template_name='album/index.html'), name='home_html'),
-    path('login.html', TemplateView.as_view(template_name='album/login.html'), name='login_html'),
-    path('login/', TemplateView.as_view(template_name='album/login.html'), name='login'),
-    path('register.html', TemplateView.as_view(template_name='album/register.html'), name='register_html'),
-    path('register/', TemplateView.as_view(template_name='album/register.html'), name='register'),
+    path('', ensure_csrf_cookie(TemplateView.as_view(template_name='album/index.html')), name='home'),
+    path('index.html', ensure_csrf_cookie(TemplateView.as_view(template_name='album/index.html')), name='home_html'),
+    path('login.html', ensure_csrf_cookie(TemplateView.as_view(template_name='album/login.html')), name='login_html'),
+    path('login/', ensure_csrf_cookie(TemplateView.as_view(template_name='album/login.html')), name='login'),
+    path('register.html', ensure_csrf_cookie(TemplateView.as_view(template_name='album/register.html')), name='register_html'),
+    path('register/', ensure_csrf_cookie(TemplateView.as_view(template_name='album/register.html')), name='register'),
     path('forgot-password.html', TemplateView.as_view(template_name='album/forgot-password.html'), name='forgot_password_html'),
     path('forgot-password/', TemplateView.as_view(template_name='album/forgot-password.html'), name='forgot_password'),
     path('reset-password.html', TemplateView.as_view(template_name='album/reset-password.html'), name='reset_password_html'),
@@ -41,6 +42,8 @@ urlpatterns = [
     path('food-pickup/', TemplateView.as_view(template_name='album/food-pickup.html'), name='food_pickup'),
     path('badges/', TemplateView.as_view(template_name='badges/index.html'), name='badges'),
     path('badges/index.html', TemplateView.as_view(template_name='badges/index.html'), name='badges_html'),
+    path('settings.html', TemplateView.as_view(template_name='album/settings.html'), name='settings_html'),
+    path('settings/', TemplateView.as_view(template_name='album/settings.html'), name='settings'),
     path('admin/', admin.site.urls),
     path('api/users/', include('users.urls')),
 ]

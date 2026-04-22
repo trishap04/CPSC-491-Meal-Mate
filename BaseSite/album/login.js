@@ -51,6 +51,12 @@ loginForm?.addEventListener("submit", async (event) => {
     }
 
     showLoginMessage(data.message || "Login successful.", "success");
+    
+    // Save JWT tokens for secure future requests
+    if (data.access && data.refresh) {
+      setTokens(data.access, data.refresh);
+    }
+
     loginForm.reset();
     loginForm.classList.remove("was-validated");
 
