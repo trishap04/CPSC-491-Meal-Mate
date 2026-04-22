@@ -105,11 +105,26 @@
             <a href="index.html" class="btn btn-outline-secondary">Cancel</a>
           </div>
         </form>
+
+        <div id="securitySection" class="form-section mt-5 border-top pt-4">
+          <h3 class="section-title text-danger">Security & Danger Zone</h3>
+          <p class="text-muted small">Manage your session or permanently remove your account.</p>
+          
+          <div class="d-flex flex-column gap-2 mt-3">
+            <button id="logoutButton" class="btn btn-outline-primary">
+              Logout
+            </button>
+            <button id="deleteAccountButton" class="btn btn-danger">
+              Delete Account
+            </button>
+          </div>
+        </div>
       </div>
     </section>
   </main>
 
   <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="api.js"></script>
   <script src="settings.js"></script>
 </body>
 
