@@ -61,8 +61,12 @@
               <label for="loginPassword" class="form-label mb-0">Password</label>
               <a href="forgot-password.html" class="utility-link">Forgot Password?</a>
             </div>
-            <input type="password" class="form-control" id="loginPassword" name="password"
-              placeholder="Enter your password" required minlength="8" autocomplete="current-password" />
+            <div class="input-group">
+              <input type="password" class="form-control" id="loginPassword" name="password"
+                placeholder="Enter your password" required minlength="8" autocomplete="current-password" />
+              <button type="button" class="btn btn-outline-secondary" id="togglePassword"
+                aria-label="Show or hide password">Show</button>
+            </div>
             <div class="invalid-feedback">Please enter your password.</div>
           </div>
 
