@@ -19,14 +19,14 @@ class RegisterSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True, 'min_length': 8}}
 
     def validate_username(self, value):
-        """Validate username is unique (case-insensitive)"""
-        if User.objects.filter(username__iexact=value).exists():
-            raise serializers.ValidationError('That username is already taken.')
-        # Check for valid format
-        if not re.match(r'^[a-zA-Z0-9_-]+$', value):
-            raise serializers.ValidationError('Username can only contain letters, numbers, underscores, and hyphens.')
+        """Validate username format and uniqueness (case-insensitive), normalize to lowercase."""
+        value = value.strip().lower()
         if len(value) < 3:
             raise serializers.ValidationError('Username must be at least 3 characters long.')
+        if not re.match(r'^[a-z0-9_-]+$', value):
+            raise serializers.ValidationError('Username can only contain letters, numbers, underscores, and hyphens.')
+        if User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError('That username is already taken.')
         return value
 
     def validate_email(self, value):
