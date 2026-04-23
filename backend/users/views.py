@@ -178,6 +178,31 @@ class CheckUsernameAvailabilityView(APIView):
         }, status=status.HTTP_200_OK)
 
 
+class CheckEmailAvailabilityView(APIView):
+    """Check whether an email address is already registered (case-insensitive)."""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = (request.data.get('email') or '').strip().lower()
+
+        if not email:
+            return Response(
+                {'available': False, 'message': 'Email cannot be empty.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if User.objects.filter(email__iexact=email).exists():
+            return Response(
+                {'available': False, 'message': 'An account with that email already exists.'},
+                status=status.HTTP_200_OK
+            )
+
+        return Response(
+            {'available': True, 'message': 'Email is available.'},
+            status=status.HTTP_200_OK
+        )
+
+
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 

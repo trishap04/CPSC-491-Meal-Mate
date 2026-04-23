@@ -16,7 +16,7 @@
   <main class="login-shell">
     <section class="login-card shadow-lg">
       <div class="brand-panel">
-        <a href="login.html" class="brand-link">Back to login</a>
+        <a href="/login/" class="brand-link">Back to login</a>
         <img src="../assets/images/mealmate-high-resolution-logo-transparent.png" alt="Meal Mate logo"
           class="brand-logo" />
         <p class="eyebrow">Meal Mate</p>
@@ -63,9 +63,13 @@
 
           <div class="mb-3">
             <label for="registerEmail" class="form-label">Email</label>
-            <input type="email" class="form-control" id="registerEmail" name="email"
-              placeholder="Enter your email" required />
+            <div class="input-group">
+              <input type="email" class="form-control" id="registerEmail" name="email"
+                placeholder="Enter your email" required autocomplete="email" />
+              <span class="input-group-text" id="emailAvailability"></span>
+            </div>
             <div class="invalid-feedback">Please enter a valid email address.</div>
+            <small class="form-text" id="emailMessage"></small>
           </div>
 
           <div class="mb-3">
@@ -120,7 +124,7 @@
 
         <p class="account-prompt">
           Already have an account?
-          <a href="login.html" class="utility-link">Login</a>
+          <a href="/login/" class="utility-link">Login</a>
         </p>
       </div>
     </section>
