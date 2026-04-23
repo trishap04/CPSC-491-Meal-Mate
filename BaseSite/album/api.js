@@ -42,6 +42,42 @@ function clearTokens() {
 }
 
 /**
+ * End the user session: clear local tokens, blacklist the refresh token on the
+ * backend (best-effort — never blocks the redirect), then navigate away.
+ *
+ * Always clears tokens even if the network request fails, so the user is
+ * never left in a broken half-logged-in state.
+ *
+ * @param {string} redirectUrl - Where to send the browser after logout (default: /login/)
+ */
+async function performLogout(redirectUrl = '/login/') {
+    const accessToken = getAccessToken();
+    const refreshToken = getRefreshToken();
+
+    // Clear locally first — this is the authoritative logout action
+    clearTokens();
+
+    // Best-effort blacklist on backend; use raw fetch to avoid apiFetch's
+    // token-refresh logic (which would be pointless during logout)
+    try {
+        const csrfToken = getCookie('csrftoken');
+        const headers = { 'Content-Type': 'application/json' };
+        if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+        if (csrfToken) headers['X-CSRFToken'] = csrfToken;
+
+        await fetch(`${API_BASE_URL}/api/users/logout/`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ refresh: refreshToken }),
+        });
+    } catch {
+        // Ignore — local tokens are already cleared, session is ended
+    }
+
+    window.location.href = redirectUrl;
+}
+
+/**
  * Helper to get CSRF token from cookies
  */
 function getCookie(name) {
