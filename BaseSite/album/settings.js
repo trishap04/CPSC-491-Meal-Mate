@@ -7,25 +7,9 @@ const deleteAccountButton = document.getElementById("deleteAccountButton");
 const bioInput = document.getElementById("settingsBio");
 const bioCharCount = document.getElementById("bioCharCount");
 
-const profileEndpoint =
-  window.location.port === "5500"
-    ? "http://127.0.0.1:8000/api/users/profile/"
-    : "/api/users/profile/";
-
-const updateProfileEndpoint =
-  window.location.port === "5500"
-    ? "http://127.0.0.1:8000/api/users/profile/update/"
-    : "/api/users/profile/update/";
-
-const logoutEndpoint =
-  window.location.port === "5500"
-    ? "http://127.0.0.1:8000/api/users/logout/"
-    : "/api/users/logout/";
-
-const deleteAccountEndpoint =
-  window.location.port === "5500"
-    ? "http://127.0.0.1:8000/api/users/delete-account/"
-    : "/api/users/delete-account/";
+const profileEndpoint = "/api/users/profile/";
+const updateProfileEndpoint = "/api/users/profile/update/";
+const deleteAccountEndpoint = "/api/users/delete-account/";
 
 // Validation functions
 function validatePhoneNumber(phone) {
@@ -100,7 +84,7 @@ async function loadUserProfile() {
     settingsForm.classList.remove("d-none");
   } catch (error) {
     if (error.message.includes("Login required") || error.message.includes("401")) {
-      window.location.href = "login.html";
+      window.location.href = "/login/";
       return;
     }
     showSettingsMessage("Unable to load your profile. Please try again.", "danger");
@@ -167,9 +151,9 @@ settingsForm?.addEventListener("submit", async (event) => {
       marketing_emails: document.getElementById("settingsMarketingEmails").checked,
     };
 
-    // Remove null values to avoid overwriting with empty data
+    // Remove null values to avoid overwriting optional fields with empty data
     Object.keys(updateData).forEach(key => {
-      if (updateData[key] === null && updateData[key] === '') {
+      if (updateData[key] === null || updateData[key] === '') {
         delete updateData[key];
       }
     });
@@ -197,20 +181,7 @@ settingsForm?.addEventListener("submit", async (event) => {
 // Handle logout
 async function handleLogout() {
   if (!confirm("Are you sure you want to log out?")) return;
-
-  try {
-    const refreshToken = localStorage.getItem("mealmate_refresh_token");
-    await apiFetch(logoutEndpoint, {
-      method: "POST",
-      body: JSON.stringify({ refresh: refreshToken }),
-    });
-  } catch (error) {
-    console.error("Logout error:", error);
-  } finally {
-    localStorage.removeItem("mealmate_access_token");
-    localStorage.removeItem("mealmate_refresh_token");
-    window.location.href = "login.html";
-  }
+  await performLogout("/login/");
 }
 
 // Handle account deletion
@@ -224,14 +195,9 @@ async function handleDeleteAccount() {
   }
 
   try {
-    await apiFetch(deleteAccountEndpoint, {
-      method: "DELETE",
-    });
-
-    // Cleanup and redirect
-    localStorage.removeItem("mealmate_access_token");
-    localStorage.removeItem("mealmate_refresh_token");
-    window.location.href = "index.html";
+    await apiFetch(deleteAccountEndpoint, { method: "DELETE" });
+    clearTokens();
+    window.location.href = "/login/";
   } catch (error) {
     console.error("Error deleting account:", error);
     alert(error.message || "Failed to delete account. Please try again.");
