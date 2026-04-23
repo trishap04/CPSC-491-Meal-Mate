@@ -6,6 +6,17 @@
 
 document.addEventListener("DOMContentLoaded", () => {
     const authButtons = document.getElementById("authButtons");
+    const dropOffBtn = document.getElementById("dropOffFoodBtn");
+
+    // Guard the Drop Off Food button — requires login
+    if (dropOffBtn) {
+        dropOffBtn.addEventListener("click", (event) => {
+            if (!getAccessToken()) {
+                event.preventDefault();
+                window.location.href = "/login/";
+            }
+        });
+    }
 
     if (!authButtons) return;
 
