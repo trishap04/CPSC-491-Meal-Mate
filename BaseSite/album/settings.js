@@ -184,29 +184,63 @@ async function handleLogout() {
   await performLogout("/login/");
 }
 
-// Handle account deletion
-async function handleDeleteAccount() {
-  if (
-    !confirm(
-      "Are you absolutely sure you want to delete your account? This action cannot be undone."
-    )
-  ) {
-    return;
-  }
+// Delete account — driven by the Bootstrap confirmation modal in settings.html
+const deleteAccountModal = document.getElementById("deleteAccountModal");
+const deleteAccountConfirmButton = document.getElementById("deleteAccountConfirmButton");
+const deleteAccountPasswordInput = document.getElementById("deleteAccountPassword");
+const deleteAccountError = document.getElementById("deleteAccountError");
 
-  try {
-    await apiFetch(deleteAccountEndpoint, { method: "DELETE" });
-    clearTokens();
-    window.location.href = "/login/";
-  } catch (error) {
-    console.error("Error deleting account:", error);
-    alert(error.message || "Failed to delete account. Please try again.");
+function showDeleteError(message) {
+  deleteAccountError.textContent = message;
+  deleteAccountError.classList.remove("d-none");
+}
+
+function resetDeleteModal() {
+  if (deleteAccountPasswordInput) deleteAccountPasswordInput.value = "";
+  if (deleteAccountError) deleteAccountError.classList.add("d-none");
+  if (deleteAccountConfirmButton) {
+    deleteAccountConfirmButton.disabled = false;
+    deleteAccountConfirmButton.textContent = "Delete My Account";
   }
 }
 
+// Reset the modal state every time it opens so stale errors don't persist
+deleteAccountModal?.addEventListener("show.bs.modal", resetDeleteModal);
+
+deleteAccountConfirmButton?.addEventListener("click", async () => {
+  const password = deleteAccountPasswordInput?.value ?? "";
+
+  if (!password) {
+    showDeleteError("Please enter your password to confirm deletion.");
+    deleteAccountPasswordInput?.classList.add("is-invalid");
+    return;
+  }
+
+  deleteAccountPasswordInput?.classList.remove("is-invalid");
+  deleteAccountConfirmButton.disabled = true;
+  deleteAccountConfirmButton.textContent = "Deleting...";
+
+  try {
+    await apiFetch(deleteAccountEndpoint, {
+      method: "DELETE",
+      body: JSON.stringify({
+        password,
+        refresh_token: getRefreshToken(),
+      }),
+    });
+
+    // Session is gone — clear tokens and land on login with a confirmation message
+    clearTokens();
+    window.location.href = "/login/?deleted=1";
+  } catch (error) {
+    showDeleteError(error.message || "Failed to delete account. Please try again.");
+    deleteAccountConfirmButton.disabled = false;
+    deleteAccountConfirmButton.textContent = "Delete My Account";
+  }
+});
+
 // Event Listeners
 logoutButton?.addEventListener("click", handleLogout);
-deleteAccountButton?.addEventListener("click", handleDeleteAccount);
 
 // Load profile on page load
 document.addEventListener("DOMContentLoaded", loadUserProfile);

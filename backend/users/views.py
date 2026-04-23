@@ -195,13 +195,37 @@ class LogoutView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@method_decorator(csrf_protect, name='dispatch')
 class DeleteAccountView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request):
-        user = request.user
-        user.delete()
-        return Response({"message": "Account deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+        password = (request.data.get('password') or '').strip()
+
+        if not password:
+            return Response(
+                {'error': 'Your password is required to delete your account.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not request.user.check_password(password):
+            return Response(
+                {'error': 'Incorrect password. Please try again.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Best-effort: blacklist the caller's refresh token before the user row
+        # is deleted (row deletion would make the token un-blacklistable anyway,
+        # but this cleans up the blacklist table while the user still exists).
+        refresh_token_str = request.data.get('refresh_token')
+        if refresh_token_str:
+            try:
+                RefreshToken(refresh_token_str).blacklist()
+            except Exception:
+                pass
+
+        request.user.delete()
+        return Response({"message": "Your account has been permanently deleted."}, status=status.HTTP_200_OK)
 
 
 @method_decorator(csrf_protect, name='dispatch')

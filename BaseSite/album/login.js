@@ -40,11 +40,22 @@ function formatLockoutTime(isoString) {
   }
 }
 
-// Redirect already-authenticated users away from the login page
 document.addEventListener("DOMContentLoaded", () => {
-  const token = getAccessToken();
-  if (token) {
+  // Redirect already-authenticated users away from the login page
+  if (getAccessToken()) {
     window.location.href = "/";
+    return;
+  }
+
+  // Show a confirmation banner when arriving here after account deletion
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("deleted") === "1") {
+    showLoginMessage(
+      "Your account has been permanently deleted. We're sorry to see you go.",
+      "info"
+    );
+    // Clean up the URL so a page refresh doesn't re-show the banner
+    history.replaceState(null, "", "/login/");
   }
 });
 
