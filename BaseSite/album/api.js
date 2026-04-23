@@ -107,7 +107,7 @@ async function apiFetch(endpoint, options = {}) {
                     response = await fetch(url, options);
                 } else {
                     clearTokens();
-                    window.location.href = '/login.html';
+                    window.location.href = '/login/';
                     throw new Error("Login required");
                 }
             }
@@ -115,7 +115,10 @@ async function apiFetch(endpoint, options = {}) {
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || errorData.detail || `Error: ${response.status}`);
+            const err = new Error(errorData.error || errorData.detail || `Error: ${response.status}`);
+            // Attach extra fields so callers can inspect them (e.g. locked_until for account lockouts)
+            Object.assign(err, errorData);
+            throw err;
         }
 
         // Handle 204 No Content

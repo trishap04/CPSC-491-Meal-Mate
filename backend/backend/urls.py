@@ -42,6 +42,8 @@ urlpatterns = [
     path('food-pickup/', TemplateView.as_view(template_name='album/food-pickup.html'), name='food_pickup'),
     path('badges/', TemplateView.as_view(template_name='badges/index.html'), name='badges'),
     path('badges/index.html', TemplateView.as_view(template_name='badges/index.html'), name='badges_html'),
+    path('change-password.html', ensure_csrf_cookie(TemplateView.as_view(template_name='album/change-password.html')), name='change_password_html'),
+    path('change-password/', ensure_csrf_cookie(TemplateView.as_view(template_name='album/change-password.html')), name='change_password'),
     path('settings.html', TemplateView.as_view(template_name='album/settings.html'), name='settings_html'),
     path('settings/', TemplateView.as_view(template_name='album/settings.html'), name='settings'),
     path('admin/', admin.site.urls),

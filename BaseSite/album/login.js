@@ -2,10 +2,6 @@ const loginForm = document.getElementById("loginForm");
 const loginMessage = document.getElementById("loginMessage");
 const loginSubmitButton = document.getElementById("loginSubmitButton");
 const togglePasswordButton = document.getElementById("togglePassword");
-const loginEndpoint =
-  window.location.port === "5500"
-    ? "http://127.0.0.1:8000/api/users/login/"
-    : "/api/users/login/";
 
 function showLoginMessage(message, type) {
   loginMessage.textContent = message;
@@ -28,6 +24,30 @@ function togglePasswordVisibility() {
   }
 }
 
+function formatLockoutTime(isoString) {
+  if (!isoString) return null;
+  try {
+    const until = new Date(isoString);
+    const now = new Date();
+    const diffMs = until - now;
+    if (diffMs <= 0) return null;
+    const diffMins = Math.ceil(diffMs / 60000);
+    if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? "s" : ""}`;
+    const diffHours = Math.ceil(diffMins / 60);
+    return `${diffHours} hour${diffHours !== 1 ? "s" : ""}`;
+  } catch {
+    return null;
+  }
+}
+
+// Redirect already-authenticated users away from the login page
+document.addEventListener("DOMContentLoaded", () => {
+  const token = getAccessToken();
+  if (token) {
+    window.location.href = "/";
+  }
+});
+
 togglePasswordButton?.addEventListener("click", togglePasswordVisibility);
 
 loginForm?.addEventListener("submit", async (event) => {
@@ -49,27 +69,38 @@ loginForm?.addEventListener("submit", async (event) => {
   const password = document.getElementById("loginPassword").value;
 
   try {
-    const data = await apiFetch(loginEndpoint, {
+    const data = await apiFetch("/api/users/login/", {
       method: "POST",
       body: JSON.stringify({ identifier, password }),
     });
-
-    showLoginMessage(data.message || "Login successful.", "success");
 
     if (data.access && data.refresh) {
       setTokens(data.access, data.refresh);
     }
 
+    showLoginMessage(data.message || "Login successful.", "success");
     loginForm.reset();
     loginForm.classList.remove("was-validated");
 
-    if (data.redirect_url) {
-      setTimeout(() => {
-        window.location.href = data.redirect_url;
-      }, 900);
-    }
+    const redirectUrl = data.redirect_url;
+    const safeRedirect =
+      redirectUrl && redirectUrl.startsWith("/") && !redirectUrl.startsWith("//")
+        ? redirectUrl
+        : "/";
+
+    setTimeout(() => {
+      window.location.href = safeRedirect;
+    }, 900);
   } catch (error) {
-    showLoginMessage(error.message || "Unable to log in with those credentials.", "danger");
+    // Attempt to extract lockout time from a structured error if available
+    let message = error.message || "Unable to log in with those credentials.";
+    if (error.locked_until) {
+      const timeLeft = formatLockoutTime(error.locked_until);
+      if (timeLeft) {
+        message = `Your account is locked. Try again in ${timeLeft}.`;
+      }
+    }
+    showLoginMessage(message, "danger");
   } finally {
     loginSubmitButton.disabled = false;
     loginSubmitButton.textContent = "Log In";
