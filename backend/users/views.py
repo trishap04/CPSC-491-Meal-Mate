@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.decorators import method_decorator
@@ -63,21 +63,53 @@ class LoginView(APIView):
             )
 
         username = identifier
+        user = None
+        user_profile = None
+
         if '@' in identifier:
             try:
-                username = User.objects.get(email__iexact=identifier).username
+                user = User.objects.get(email__iexact=identifier)
+                username = user.username
             except User.DoesNotExist:
                 return Response(
-                    {'error': 'No account matches that email address.'},
-                    status=status.HTTP_400_BAD_REQUEST
+                    {'error': 'Invalid username/email or password.'},
+                    status=status.HTTP_401_UNAUTHORIZED
                 )
 
-        user = authenticate(request, username=username, password=password)
-        if user is None:
+        try:
+            user = user or User.objects.get(username__iexact=username)
+        except User.DoesNotExist:
             return Response(
                 {'error': 'Invalid username/email or password.'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
+
+        try:
+            user_profile = UserProfile.objects.get(user=user)
+        except UserProfile.DoesNotExist:
+            user_profile = None
+
+        if user_profile and user_profile.is_account_locked():
+            locked_until = user_profile.account_locked_until
+            return Response(
+                {
+                    'error': 'Your account is locked. Please try again later.',
+                    'locked_until': locked_until.isoformat() if locked_until else None
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        user = authenticate(request, username=username, password=password)
+        if user is None:
+            if user_profile:
+                user_profile.increment_failed_login()
+            return Response(
+                {'error': 'Invalid username/email or password.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        if user_profile:
+            user_profile.reset_failed_login()
 
         refresh = RefreshToken.for_user(user)
         return Response({
@@ -85,8 +117,6 @@ class LoginView(APIView):
             'access': str(refresh.access_token),
             'refresh': str(refresh),
             'redirect_url': '/index.html',
-            'access': str(refresh.access_token),
-            'refresh': str(refresh),
             'user': {
                 'id': user.id,
                 'username': user.username,

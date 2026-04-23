@@ -1,6 +1,7 @@
 const loginForm = document.getElementById("loginForm");
 const loginMessage = document.getElementById("loginMessage");
 const loginSubmitButton = document.getElementById("loginSubmitButton");
+const togglePasswordButton = document.getElementById("togglePassword");
 const loginEndpoint =
   window.location.port === "5500"
     ? "http://127.0.0.1:8000/api/users/login/"
@@ -15,6 +16,19 @@ function resetLoginMessage() {
   loginMessage.textContent = "";
   loginMessage.className = "alert d-none";
 }
+
+function togglePasswordVisibility() {
+  const passwordInput = document.getElementById("loginPassword");
+  if (passwordInput.type === "password") {
+    passwordInput.type = "text";
+    togglePasswordButton.textContent = "Hide";
+  } else {
+    passwordInput.type = "password";
+    togglePasswordButton.textContent = "Show";
+  }
+}
+
+togglePasswordButton?.addEventListener("click", togglePasswordVisibility);
 
 loginForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -35,24 +49,13 @@ loginForm?.addEventListener("submit", async (event) => {
   const password = document.getElementById("loginPassword").value;
 
   try {
-    const response = await fetch(loginEndpoint, {
+    const data = await apiFetch(loginEndpoint, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({ identifier, password }),
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      showLoginMessage(data.error || "Unable to log in with those credentials.", "danger");
-      return;
-    }
-
     showLoginMessage(data.message || "Login successful.", "success");
-    
-    // Save JWT tokens for secure future requests
+
     if (data.access && data.refresh) {
       setTokens(data.access, data.refresh);
     }
@@ -66,7 +69,7 @@ loginForm?.addEventListener("submit", async (event) => {
       }, 900);
     }
   } catch (error) {
-    showLoginMessage("We could not reach the server. Please try again in a moment.", "danger");
+    showLoginMessage(error.message || "Unable to log in with those credentials.", "danger");
   } finally {
     loginSubmitButton.disabled = false;
     loginSubmitButton.textContent = "Log In";
