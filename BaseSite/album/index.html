@@ -87,11 +87,53 @@
     }
 
     .notification-item {
-      white-space: normal;
-      border-bottom: 1px solid #eee;
-      padding-top: 10px;
-      padding-bottom: 10px;
+  white-space: normal;
+  border-bottom: 1px solid #eee;
+  padding: 10px 14px;
+}
+
+    #notificationCount {
+      font-size: 11px;
     }
+
+  @media (max-width: 576px) {
+    .dropdown-menu {
+      width: 92vw !important;
+      max-width: 92vw;
+      right: 4vw !important;
+      left: auto !important;
+      transform: none !important;
+    }
+
+    #notificationDropdown {
+      padding: 6px 10px;
+      font-size: 18px;
+    }
+
+    #notificationList {
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    .notification-item {
+      font-size: 14px;
+      padding: 10px;
+    }
+
+    .notification-item small {
+      font-size: 12px;
+    }
+
+    .dropdown-header {
+      flex-direction: column;
+      align-items: flex-start !important;
+      gap: 8px;
+    }
+
+    .dropdown-header button {
+      width: 100%;
+    }
+  }
 
     .bd-mode-toggle {
       z-index: 1500;
@@ -112,7 +154,7 @@
     }
   </style>
 </head>
-
+<script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
 <script src="notifications.js"></script>
 
 <body>
@@ -213,7 +255,13 @@
           <a href="login.html" class="btn btn-outline-light btn-sm">Login</a>
           <a href="register.html" class="btn btn-warning btn-sm">Register</a>
           <div class="dropdown">
-            <button class="btn btn-outline-light position-relative" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <button
+              id="notificationDropdown"
+              class="btn btn-outline-light position-relative"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
               🔔
               <span
                 id="notificationCount"
@@ -222,13 +270,10 @@
               >0</span>
             </button>
 
-            <ul class="dropdown-menu dropdown-menu-end" style="width: 320px;">
+            <ul class="dropdown-menu dropdown-menu-end notification-menu">
               <li class="dropdown-header d-flex justify-content-between align-items-center">
                 <span>Notifications</span>
-                <div class="d-flex gap-2">
-                  <button class="btn btn-sm btn-outline-secondary" onclick="markAllNotificationsRead()">Mark all read</button>
-                  <button class="btn btn-sm btn-outline-danger" onclick="clearNotifications()">Clear</button>
-                </div>
+                <button class="btn btn-sm btn-outline-danger" onclick="clearNotifications()">Clear</button>
               </li>
               <li><hr class="dropdown-divider"></li>
               <div id="notificationList"></div>

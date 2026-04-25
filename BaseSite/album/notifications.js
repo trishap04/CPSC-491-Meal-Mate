@@ -60,19 +60,22 @@ function renderNotificationBell() {
 
   list.innerHTML = notifications
     .slice(0, 8)
-    .map(
-      n => `
-        <li class="dropdown-item notification-item ${n.read ? "" : "fw-bold"}">
-          <div>${escapeHTML(n.title)}</div>
-          <small class="text-muted d-block">${escapeHTML(n.message)}</small>
-          <small class="text-secondary">${escapeHTML(n.createdAt)}</small>
-        </li>
-      `
-    )
+    .map(n => `
+      <li class="dropdown-item notification-item ${n.read ? "" : "fw-bold"}">
+        <div>${escapeHTML(n.title)}</div>
+        <small class="text-muted d-block">${escapeHTML(n.message)}</small>
+        <small class="text-secondary">${escapeHTML(n.createdAt)}</small>
+      </li>
+    `)
     .join("");
 }
 
 function showToastNotification(title, message, type = "info") {
+  if (typeof bootstrap === "undefined") {
+    console.warn("Bootstrap is not loaded. Toast notification skipped.");
+    return;
+  }
+
   const bgClass =
     type === "success"
       ? "text-bg-success"
@@ -110,6 +113,19 @@ function showToastNotification(title, message, type = "info") {
   toast.show();
 }
 
+function sendBrowserNotification(title, message) {
+  if (!("Notification" in window)) return;
+
+  if (Notification.permission === "granted") {
+    new Notification(title, { body: message });
+  } else if (Notification.permission !== "denied") {
+    Notification.requestPermission().then(permission => {
+      if (permission === "granted") {
+        new Notification(title, { body: message });
+      }
+    });
+  }
+}
 
 function escapeHTML(text) {
   const div = document.createElement("div");
@@ -119,4 +135,12 @@ function escapeHTML(text) {
 
 document.addEventListener("DOMContentLoaded", () => {
   renderNotificationBell();
+
+  const notificationDropdown = document.getElementById("notificationDropdown");
+
+  if (notificationDropdown) {
+    notificationDropdown.addEventListener("click", () => {
+      markAllNotificationsRead();
+    });
+  }
 });
