@@ -35,6 +35,7 @@ urlpatterns = [
     path('api/foods/search/', FoodSearchView.as_view(), name='food-search'),
     path('api/foods/', FoodListView.as_view(), name='food-list'),
     path('api/donations/', DonationCreateView.as_view(), name='donation-create'),
+    path('donations/', DonationCreateView.as_view(), name='donation-submit'),
     path('api/donations/<int:donation_id>/', DonationDetailView.as_view(), name='donation-detail'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
