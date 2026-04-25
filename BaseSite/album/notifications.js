@@ -1,5 +1,12 @@
 const MEALMATE_NOTIFICATIONS_KEY = "mealmate_notifications";
 
+function getNotifications() {
+  try {
+    return JSON.parse(localStorage.getItem(MEALMATE_NOTIFICATIONS_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
 
 function saveNotifications(notifications) {
   localStorage.setItem(MEALMATE_NOTIFICATIONS_KEY, JSON.stringify(notifications));
