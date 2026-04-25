@@ -1,5 +1,7 @@
 // Configuration
 const API_BASE_URL = 'http://localhost:8000/api/users';
+const fetchWithRetry = window.MealMateNetwork?.fetchWithRetry || window.fetch.bind(window);
+const ResilientWebSocket = window.MealMateNetwork?.ResilientWebSocket || null;
 
 // Unit options for different categories
 const UNIT_OPTIONS = {
@@ -29,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
   loadFoodsForCategory('meat');
   setupEventListeners();
   createQuantityModal();
+  initializeRealtimeSync();
 });
 
 // Setup event listeners
@@ -57,7 +60,7 @@ function setupEventListeners() {
 // Load categories from API
 async function loadCategories() {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/categories/`);
+    const response = await fetchWithRetry(`${API_BASE_URL}/api/categories/`);
     if (!response.ok) throw new Error('Failed to load categories');
     
     categoriesData = await response.json();
@@ -125,7 +128,7 @@ function updateCategoryButtons() {
 // Load foods for a specific category
 async function loadFoodsForCategory(category) {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/foods/?category=${category}`);
+    const response = await fetchWithRetry(`${API_BASE_URL}/api/foods/?category=${category}`);
     if (!response.ok) throw new Error('Failed to load foods');
     
     allFoods = await response.json();
@@ -146,7 +149,7 @@ async function searchFoods(event) {
   
   try {
     const queryParam = selectedCategory ? `&category=${selectedCategory}` : '';
-    const response = await fetch(`${API_BASE_URL}/api/foods/search/?q=${encodeURIComponent(searchTerm)}${queryParam}`);
+    const response = await fetchWithRetry(`${API_BASE_URL}/api/foods/search/?q=${encodeURIComponent(searchTerm)}${queryParam}`);
     if (!response.ok) throw new Error('Failed to search foods');
     
     const results = await response.json();
@@ -477,17 +480,18 @@ function handleFormSubmit(event) {
 // Submit donation to API
 async function submitDonation(donationData) {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/donations/`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/api/donations/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(donationData)
+      body: JSON.stringify(donationData),
+      retries: 3,
+      retryDelayMs: 800,
     });
     
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to create donation');
+      throw new Error(await getResponseErrorMessage(response, 'Failed to create donation'));
     }
     
     const result = await response.json();
@@ -519,6 +523,39 @@ async function submitDonation(donationData) {
     console.error('Error submitting donation:', error);
     showErrorToast('Error: ' + error.message);
   }
+}
+
+async function getResponseErrorMessage(response, fallbackMessage) {
+  try {
+    const error = await response.json();
+    if (typeof error.error === 'string') {
+      return error.error;
+    }
+    return JSON.stringify(error.error || error);
+  } catch (parseError) {
+    return fallbackMessage;
+  }
+}
+
+function initializeRealtimeSync() {
+  if (!ResilientWebSocket || !window.MEAL_MATE_WS_URL) {
+    return;
+  }
+
+  const socket = new ResilientWebSocket(window.MEAL_MATE_WS_URL, {
+    maxReconnectAttempts: 6,
+    reconnectDelayMs: 1000,
+  });
+
+  socket.onopen = () => {
+    console.info('Realtime donation updates connected.');
+  };
+
+  socket.onerror = () => {
+    console.warn('Realtime donation updates encountered a connection issue.');
+  };
+
+  socket.connect();
 }
 
 // Success Toast Notification
@@ -682,4 +719,3 @@ function escapeHtml(text) {
     }, false)
   })
 })()
-

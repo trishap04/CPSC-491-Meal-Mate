@@ -215,7 +215,10 @@
   </div>
 
   <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="network.js"></script>
   <script>
+    const fetchWithRetry = window.MealMateNetwork?.fetchWithRetry || window.fetch.bind(window);
+
     // Get donation data from session storage or API
     document.addEventListener('DOMContentLoaded', async function() {
       const params = new URLSearchParams(window.location.search);
@@ -230,7 +233,10 @@
       } else if (donationId) {
         // Fallback: fetch from API
         try {
-          const response = await fetch(`http://localhost:8000/api/users/api/donations/${donationId}/`);
+          const response = await fetchWithRetry(`http://localhost:8000/api/users/api/donations/${donationId}/`, {
+            retries: 3,
+            retryDelayMs: 800,
+          });
           if (response.ok) {
             donationData = await response.json();
             displayDonation(donationData);

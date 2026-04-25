@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -19,11 +20,12 @@ from .serializers import (
     UpdateUserProfileSerializer,
     FoodSerializer,
     FoodCategorySerializer,
+    DonationCreateSerializer,
     DonationSerializer,
 )
 from .models import Food, FoodCategory, Donation, DonationItem, UserProfile
 from django.db.models import Q
-from rest_framework_simplejwt.tokens import RefreshToken
+from django.db import transaction
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -474,48 +476,25 @@ class DonationCreateView(APIView):
     """API to create a new donation with items"""
     def post(self, request):
         try:
-            # Extract donation info
-            donation_data = {
-                'first_name': request.data.get('first_name'),
-                'last_name': request.data.get('last_name'),
-                'email': request.data.get('email'),
-                'phone': request.data.get('phone'),
-                'pickup_date': request.data.get('pickup_date'),
-                'pickup_time': request.data.get('pickup_time'),
-                'door_preference': request.data.get('door_preference'),
-            }
-            
-            # Create donation
-            if request.user.is_authenticated:
-                donation_data['user'] = request.user
-            
-            donation = Donation.objects.create(**donation_data)
-            
-            # Extract and create donation items
-            items_data = request.data.get('items', [])
-            for item in items_data:
-                food_id = item.get('food_id')
-                quantity = item.get('quantity', 1)
-                unit = item.get('unit', 'items')
-                
-                try:
-                    food = Food.objects.get(id=food_id)
-                    DonationItem.objects.create(
-                        donation=donation,
-                        food=food,
-                        quantity=quantity,
-                        unit=unit
-                    )
-                except Food.DoesNotExist:
-                    donation.delete()
-                    return Response(
-                        {'error': f'Food with id {food_id} does not exist'},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-            
+            serializer = DonationCreateSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            # Keep donation and its items in one transaction so partial writes
+            # cannot leave orphaned or incomplete donation data behind.
+            with transaction.atomic():
+                save_kwargs = {}
+                if request.user.is_authenticated:
+                    save_kwargs['user'] = request.user
+                donation = serializer.save(**save_kwargs)
+
             serializer = DonationSerializer(donation)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
+
+        except ValidationError as exc:
+            return Response(
+                {'error': exc.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except Exception as e:
             return Response(
                 {'error': str(e)},
