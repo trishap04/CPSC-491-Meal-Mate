@@ -172,6 +172,7 @@ class Donation(models.Model):
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, default='pending')
+    notes = models.TextField(blank=True, null=True)
     
     def __str__(self):
         return f"Donation from {self.first_name} {self.last_name} on {self.pickup_date}"
