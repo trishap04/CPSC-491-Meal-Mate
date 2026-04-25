@@ -496,6 +496,12 @@ async function submitDonation(donationData) {
     // Save full donation data to session for confirmation page
     sessionStorage.setItem('lastDonationId', result.id);
     sessionStorage.setItem('lastDonationData', JSON.stringify(result));
+
+    addNotification(
+      "Donation Submitted",
+      `Donation #${String(result.id).padStart(5, "0")} was submitted successfully.`,
+      "success"
+    );
     
     // Show success toast
     showSuccessToast(`✓ Donation #${String(result.id).padStart(5, '0')} submitted successfully!`, () => {
