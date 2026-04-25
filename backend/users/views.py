@@ -488,7 +488,13 @@ class DonationCreateView(APIView):
                 donation = serializer.save(**save_kwargs)
 
             serializer = DonationSerializer(donation)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(
+            {
+                    'message': 'Donation submitted successfully.',
+                    'donation': serializer.data
+             },
+            status=status.HTTP_201_CREATED
+    )
 
         except ValidationError as exc:
             return Response(
