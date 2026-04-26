@@ -275,8 +275,10 @@ class DonationCreateSerializer(serializers.ModelSerializer):
         model = Donation
         fields = [
             'first_name', 'last_name', 'email', 'phone', 'address',
-            'pickup_date', 'pickup_time', 'door_preference', 'items'
-        ]
+            'pickup_date', 'pickup_time', 'door_preference',
+            'notes',
+            'items'
+    ]
 
     def validate_items(self, value):
         if not value:
