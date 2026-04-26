@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="auto">
+<html lang="en">
 
 <head>
   <meta charset="utf-8" />
@@ -7,48 +7,50 @@
   <meta name="description" content="Log in to Meal Mate." />
   <link rel="shortcut icon" href="../assets/images/mealmate-high-resolution-logo-grayscale-transparent.png"
     type="image/x-icon" />
-  <title>Meal Mate Login</title>
-  <script src="../assets/js/color-modes.js"></script>
+  <title>Meal Mate &ndash; Login</title>
   <link href="../assets/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="login.css" rel="stylesheet" />
+  <link href="/assets/login.css" rel="stylesheet" />
 </head>
 
 <body class="login-page">
-  <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
-    <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center" id="bd-theme"
-      type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme">
-      Theme
-    </button>
-    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme">
-      <li><button type="button" class="dropdown-item" data-bs-theme-value="light">Light</button></li>
-      <li><button type="button" class="dropdown-item" data-bs-theme-value="dark">Dark</button></li>
-      <li><button type="button" class="dropdown-item active" data-bs-theme-value="auto">Auto</button></li>
-    </ul>
-  </div>
-
   <main class="login-shell">
-    <section class="login-card shadow-lg">
+    <section class="login-card">
+
+      <!-- ── Left panel ─────────────────────────────────────────────── -->
       <div class="brand-panel">
-        <a href="index.html" class="brand-link">Back to home</a>
-        <img src="../assets/images/mealmate-high-resolution-logo-transparent.png" alt="Meal Mate logo"
-          class="brand-logo" />
+        <a href="/" class="brand-link">Back to home</a>
+
+        <img src="../assets/images/mealmate-high-resolution-logo-transparent.png"
+             alt="Meal Mate logo" class="brand-logo" />
+
         <p class="eyebrow">Meal Mate</p>
         <h1>Welcome back</h1>
         <p class="brand-copy">
-          Log in to manage donations, stay connected, and keep good food moving to the people who need it.
+          Log in to manage donations, stay connected, and keep good food
+          moving to the people who need it.
         </p>
+
+        <ul class="brand-features">
+          <li>Coordinate food donations in your community</li>
+          <li>Connect surplus food with people who need it</li>
+          <li>Track your donation impact over time</li>
+        </ul>
       </div>
 
+      <!-- ── Right panel ────────────────────────────────────────────── -->
       <div class="form-panel">
         <div class="form-header">
           <p class="form-kicker">Account access</p>
-          <h2>Login</h2>
-          <p class="form-subtitle">Sign in with your username or email to access your Meal Mate account.</p>
+          <h2>Sign in</h2>
+          <p class="form-subtitle">
+            Use your username or email to access your Meal Mate account.
+          </p>
         </div>
 
         <div id="loginMessage" class="alert d-none" role="alert" aria-live="polite"></div>
 
         <form id="loginForm" novalidate>
+
           <div class="mb-3">
             <label for="loginIdentifier" class="form-label">Email or username</label>
             <input type="text" class="form-control" id="loginIdentifier" name="identifier"
@@ -57,29 +59,33 @@
           </div>
 
           <div class="mb-3">
-            <div class="d-flex justify-content-between align-items-center">
-              <label for="loginPassword" class="form-label mb-0">Password</label>
-              <a href="forgot-password.html" class="utility-link">Forgot Password?</a>
+            <div class="password-label-row">
+              <label for="loginPassword" class="form-label">Password</label>
+              <a href="/forgot-password/" class="forgot-link">Forgot Password?</a>
             </div>
-            <div class="input-group">
+            <div class="input-group has-validation">
               <input type="password" class="form-control" id="loginPassword" name="password"
-                placeholder="Enter your password" required minlength="8" autocomplete="current-password" />
-              <button type="button" class="btn btn-outline-secondary" id="togglePassword"
+                placeholder="Enter your password" required minlength="8"
+                autocomplete="current-password" />
+              <button type="button" class="toggle-password" id="togglePassword"
                 aria-label="Show or hide password">Show</button>
+              <div class="invalid-feedback">Please enter your password.</div>
             </div>
-            <div class="invalid-feedback">Please enter your password.</div>
           </div>
 
-          <button type="submit" id="loginSubmitButton" class="btn btn-primary w-100 login-button">
+          <button type="submit" id="loginSubmitButton" class="w-100 login-button">
             Log In
           </button>
         </form>
 
+        <div class="form-divider">or</div>
+
         <p class="account-prompt">
           New to Meal Mate?
-          <a href="register.html" class="utility-link">Create Account</a>
+          <a href="/register/" class="utility-link">Create Account</a>
         </p>
       </div>
+
     </section>
   </main>
 
