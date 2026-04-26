@@ -283,6 +283,20 @@ class DonationCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('At least one donation item is required.')
         return value
 
+    def validate(self, data):
+        required_fields = [
+            'first_name', 'last_name', 'email', 'phone', 'address',
+            'pickup_date', 'pickup_time', 'door_preference'
+        ]
+
+        for field in required_fields:
+            if not data.get(field):
+                raise serializers.ValidationError({
+                    field: 'This field is required.'
+                })
+
+        return data
+
     def create(self, validated_data):
         items_data = validated_data.pop('items')
         donation = Donation.objects.create(**validated_data)
