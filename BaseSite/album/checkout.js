@@ -480,7 +480,7 @@ function handleFormSubmit(event) {
 // Submit donation to API
 async function submitDonation(donationData) {
   try {
-    const response = await fetchWithRetry(`${API_BASE_URL}/api/donations/`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/donations/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
