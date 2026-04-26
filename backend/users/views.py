@@ -497,6 +497,7 @@ class DonationCreateView(APIView):
             return Response(
             {
                     'message': 'Donation submitted successfully.',
+                    'donation_id': donation.id,
                     'donation': serializer.data
              },
             status=status.HTTP_201_CREATED
