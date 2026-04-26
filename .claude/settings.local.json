@@ -13,7 +13,11 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://127.0.0.1:8000/assets/js/color-modes.js\")",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://127.0.0.1:8000/notifications.js\")",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://127.0.0.1:8000/assets/notifications.js\")",
-      "Bash(/Library/Frameworks/Python.framework/Versions/3.12/bin/python3 test_jwt.py)"
+      "Bash(/Library/Frameworks/Python.framework/Versions/3.12/bin/python3 test_jwt.py)",
+      "PowerShell(Stop-Process -Id 49652 -Force)",
+      "PowerShell(Stop-Process -Id 52936 -Force)",
+      "PowerShell(Start-Process -FilePath \"python\" -ArgumentList \"manage.py runserver\" -WorkingDirectory \"c:\\\\Users\\\\alade\\\\Documents\\\\GitHub\\\\CPSC-491-Meal-Mate\\\\backend\" -WindowStyle Normal)",
+      "Bash(python manage.py shell -c \"from django.urls import reverse; print\\('ok'\\)\")"
     ]
   }
 }

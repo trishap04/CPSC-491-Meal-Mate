@@ -127,7 +127,6 @@ class LoginView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-@method_decorator(csrf_protect, name='dispatch')
 class CheckUsernameAvailabilityView(APIView):
     """API to check if a username is available during registration or profile editing"""
     permission_classes = [AllowAny]
