@@ -135,14 +135,14 @@
   <nav style="background: #1B2340; padding: 10px 20px; display: flex; align-items: center;">
     <a href="/index.html"
       style="color: #F5F2C8; text-decoration: none; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 6px;">
-      â† Back to Home
+      &larr; Back to Home
     </a>
   </nav>
 
   <div class="container" style="max-width: 700px; margin-top: 30px; margin-bottom: 30px;">
     <!-- Confirmation Header -->
     <div class="confirmation-header no-print">
-      <div class="checkmark">âœ“</div>
+      <div class="checkmark">&#10003;</div>
       <h1>Thank You!</h1>
       <p class="lead mb-0">Your donation has been successfully recorded</p>
     </div>
@@ -150,7 +150,7 @@
     <main>
       <!-- Success Alert -->
       <div class="alert alert-success alert-dismissible fade show" role="alert" id="successAlert">
-        <h4 class="alert-heading">ðŸŽ‰ Donation Received!</h4>
+        <h4 class="alert-heading">Donation Received!</h4>
         <p class="mb-2">We've successfully recorded your donation. Below is your donation receipt for your records.</p>
         <hr>
         <p class="mb-0"><strong>Please save or print this page for your records.</strong></p>
@@ -164,7 +164,7 @@
 
       <!-- Donated Items Summary -->
       <div class="summary-section">
-        <h5>ðŸ“¦ Items You're Donating</h5>
+        <h5>Items You're Donating</h5>
         <div id="donatedItems">
           <p class="text-muted">Loading items...</p>
         </div>
@@ -172,7 +172,7 @@
 
       <!-- Pickup Details -->
       <div class="summary-section">
-        <h5>ðŸ“… Pickup Schedule</h5>
+        <h5>Pickup Schedule</h5>
         <div id="pickupDetails">
           <p class="text-muted">Loading details...</p>
         </div>
@@ -180,7 +180,7 @@
 
       <!-- Donor Information -->
       <div class="summary-section">
-        <h5>ðŸ‘¤ Your Information</h5>
+        <h5>Your Information</h5>
         <div id="donorDetails">
           <p class="text-muted">Loading information...</p>
         </div>
@@ -199,7 +199,7 @@
 
       <!-- Action Buttons -->
       <div class="action-buttons no-print">
-        <button class="btn btn-outline-primary" onclick="window.print()">ðŸ–¨ï¸ Print</button>
+        <button class="btn btn-outline-primary" onclick="window.print()">Print</button>
         <a href="/index.html" class="btn btn-primary">Back to Home</a>
       </div>
     </main>
@@ -284,8 +284,8 @@
 
       // Pickup Details
       const prefText = {
-        'meet': 'ðŸ‘¤ Meet at door',
-        'leave': 'ðŸšª Leave at door'
+        'meet': 'Meet at door',
+        'leave': 'Leave at door'
       };
 
       document.getElementById('pickupDetails').innerHTML = `
@@ -343,7 +343,7 @@
     function showError(message) {
       document.querySelector('main').innerHTML = `
         <div class="alert alert-danger" role="alert">
-          <h4 class="alert-heading">âš ï¸ Error</h4>
+          <h4 class="alert-heading">Error</h4>
           <p>${message}</p>
           <hr>
           <p class="mb-0"><a href="/index.html" class="btn btn-primary">Return to Home</a></p>
