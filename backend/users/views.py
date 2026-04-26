@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -19,11 +20,12 @@ from .serializers import (
     UpdateUserProfileSerializer,
     FoodSerializer,
     FoodCategorySerializer,
+    DonationCreateSerializer,
     DonationSerializer,
 )
 from .models import Food, FoodCategory, Donation, DonationItem, UserProfile
 from django.db.models import Q
-from rest_framework_simplejwt.tokens import RefreshToken
+from django.db import transaction
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -178,6 +180,31 @@ class CheckUsernameAvailabilityView(APIView):
         }, status=status.HTTP_200_OK)
 
 
+class CheckEmailAvailabilityView(APIView):
+    """Check whether an email address is already registered (case-insensitive)."""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = (request.data.get('email') or '').strip().lower()
+
+        if not email:
+            return Response(
+                {'available': False, 'message': 'Email cannot be empty.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if User.objects.filter(email__iexact=email).exists():
+            return Response(
+                {'available': False, 'message': 'An account with that email already exists.'},
+                status=status.HTTP_200_OK
+            )
+
+        return Response(
+            {'available': True, 'message': 'Email is available.'},
+            status=status.HTTP_200_OK
+        )
+
+
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -195,13 +222,37 @@ class LogoutView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@method_decorator(csrf_protect, name='dispatch')
 class DeleteAccountView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request):
-        user = request.user
-        user.delete()
-        return Response({"message": "Account deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+        password = (request.data.get('password') or '').strip()
+
+        if not password:
+            return Response(
+                {'error': 'Your password is required to delete your account.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not request.user.check_password(password):
+            return Response(
+                {'error': 'Incorrect password. Please try again.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Best-effort: blacklist the caller's refresh token before the user row
+        # is deleted (row deletion would make the token un-blacklistable anyway,
+        # but this cleans up the blacklist table while the user still exists).
+        refresh_token_str = request.data.get('refresh_token')
+        if refresh_token_str:
+            try:
+                RefreshToken(refresh_token_str).blacklist()
+            except Exception:
+                pass
+
+        request.user.delete()
+        return Response({"message": "Your account has been permanently deleted."}, status=status.HTTP_200_OK)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -425,48 +476,31 @@ class DonationCreateView(APIView):
     """API to create a new donation with items"""
     def post(self, request):
         try:
-            # Extract donation info
-            donation_data = {
-                'first_name': request.data.get('first_name'),
-                'last_name': request.data.get('last_name'),
-                'email': request.data.get('email'),
-                'phone': request.data.get('phone'),
-                'pickup_date': request.data.get('pickup_date'),
-                'pickup_time': request.data.get('pickup_time'),
-                'door_preference': request.data.get('door_preference'),
-            }
-            
-            # Create donation
-            if request.user.is_authenticated:
-                donation_data['user'] = request.user
-            
-            donation = Donation.objects.create(**donation_data)
-            
-            # Extract and create donation items
-            items_data = request.data.get('items', [])
-            for item in items_data:
-                food_id = item.get('food_id')
-                quantity = item.get('quantity', 1)
-                unit = item.get('unit', 'items')
-                
-                try:
-                    food = Food.objects.get(id=food_id)
-                    DonationItem.objects.create(
-                        donation=donation,
-                        food=food,
-                        quantity=quantity,
-                        unit=unit
-                    )
-                except Food.DoesNotExist:
-                    donation.delete()
-                    return Response(
-                        {'error': f'Food with id {food_id} does not exist'},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-            
+            serializer = DonationCreateSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            # Keep donation and its items in one transaction so partial writes
+            # cannot leave orphaned or incomplete donation data behind.
+            with transaction.atomic():
+                save_kwargs = {}
+                if request.user.is_authenticated:
+                    save_kwargs['user'] = request.user
+                donation = serializer.save(**save_kwargs)
+
             serializer = DonationSerializer(donation)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
+            return Response(
+            {
+                    'message': 'Donation submitted successfully.',
+                    'donation': serializer.data
+             },
+            status=status.HTTP_201_CREATED
+    )
+
+        except ValidationError as exc:
+            return Response(
+                {'error': exc.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except Exception as e:
             return Response(
                 {'error': str(e)},

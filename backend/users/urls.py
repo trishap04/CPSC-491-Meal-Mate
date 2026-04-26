@@ -5,6 +5,7 @@ from .views import (
     LoginView,
     LogoutView,
     CheckUsernameAvailabilityView,
+    CheckEmailAvailabilityView,
     DeleteAccountView,
     PasswordResetRequestView,
     PasswordResetConfirmView,
@@ -23,6 +24,7 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('check-username/', CheckUsernameAvailabilityView.as_view(), name='check-username'),
+    path('check-email/', CheckEmailAvailabilityView.as_view(), name='check-email'),
     path('delete-account/', DeleteAccountView.as_view(), name='delete-account'),
     path('password-reset/request/', PasswordResetRequestView.as_view(), name='password_reset_request'),
     path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
@@ -33,6 +35,7 @@ urlpatterns = [
     path('api/foods/search/', FoodSearchView.as_view(), name='food-search'),
     path('api/foods/', FoodListView.as_view(), name='food-list'),
     path('api/donations/', DonationCreateView.as_view(), name='donation-create'),
+    path('donations/', DonationCreateView.as_view(), name='donation-submit'),
     path('api/donations/<int:donation_id>/', DonationDetailView.as_view(), name='donation-detail'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

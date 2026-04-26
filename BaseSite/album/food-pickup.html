@@ -863,7 +863,8 @@
       </div>
     </div>
   </div>
-
+  
+  <script src="notifications.js"></script>
   <script>
     const locations = [
       {
@@ -1128,6 +1129,13 @@
       if (!name) { document.getElementById('pickupName').style.borderColor = 'var(--rust)'; return; }
       document.getElementById('modalContent').style.display = 'none';
       document.getElementById('successMsg').style.display = 'block';
+
+      addNotification(
+        "Pickup Reserved",
+        `${name} reserved a pickup from ${selectedLocation.name}.`,
+        "info"
+      );
+
       setTimeout(closeModal, 2800);
     }
 

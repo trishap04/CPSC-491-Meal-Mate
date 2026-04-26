@@ -19,14 +19,14 @@ class RegisterSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True, 'min_length': 8}}
 
     def validate_username(self, value):
-        """Validate username is unique (case-insensitive)"""
-        if User.objects.filter(username__iexact=value).exists():
-            raise serializers.ValidationError('That username is already taken.')
-        # Check for valid format
-        if not re.match(r'^[a-zA-Z0-9_-]+$', value):
-            raise serializers.ValidationError('Username can only contain letters, numbers, underscores, and hyphens.')
+        """Validate username format and uniqueness (case-insensitive), normalize to lowercase."""
+        value = value.strip().lower()
         if len(value) < 3:
             raise serializers.ValidationError('Username must be at least 3 characters long.')
+        if not re.match(r'^[a-z0-9_-]+$', value):
+            raise serializers.ValidationError('Username can only contain letters, numbers, underscores, and hyphens.')
+        if User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError('That username is already taken.')
         return value
 
     def validate_email(self, value):
@@ -240,12 +240,13 @@ class FoodCategorySerializer(serializers.ModelSerializer):
 
 
 class FoodSerializer(serializers.ModelSerializer):
-    category = FoodCategorySerializer(read_only=True)
+    category = serializers.CharField(source='category.name', read_only=True)
+    category_details = FoodCategorySerializer(source='category', read_only=True)
     category_name = serializers.CharField(source='category.get_name_display', read_only=True)
     
     class Meta:
         model = Food
-        fields = ['id', 'name', 'category', 'category_name', 'description']
+        fields = ['id', 'name', 'category', 'category_details', 'category_name', 'description']
 
 
 class DonationItemSerializer(serializers.ModelSerializer):
@@ -255,6 +256,50 @@ class DonationItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = DonationItem
         fields = ['id', 'food', 'food_id', 'quantity', 'unit']
+
+    def validate_quantity(self, value):
+        if value < 1:
+            raise serializers.ValidationError('Quantity must be at least 1.')
+        return value
+
+    def validate_food_id(self, value):
+        if not Food.objects.filter(id=value).exists():
+            raise serializers.ValidationError(f'Food with id {value} does not exist.')
+        return value
+
+
+class DonationCreateSerializer(serializers.ModelSerializer):
+    items = DonationItemSerializer(many=True, write_only=True)
+
+    class Meta:
+        model = Donation
+        fields = [
+            'first_name', 'last_name', 'email', 'phone', 'address',
+            'pickup_date', 'pickup_time', 'door_preference', 'items'
+        ]
+
+    def validate_items(self, value):
+        if not value:
+            raise serializers.ValidationError('At least one donation item is required.')
+        return value
+
+    def create(self, validated_data):
+        items_data = validated_data.pop('items')
+        donation = Donation.objects.create(**validated_data)
+
+        donation_items = []
+        for item_data in items_data:
+            food_id = item_data.pop('food_id')
+            donation_items.append(
+                DonationItem(
+                    donation=donation,
+                    food_id=food_id,
+                    **item_data,
+                )
+            )
+
+        DonationItem.objects.bulk_create(donation_items)
+        return donation
 
 
 class DonationSerializer(serializers.ModelSerializer):
