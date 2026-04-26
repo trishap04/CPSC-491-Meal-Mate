@@ -2,7 +2,18 @@
   "permissions": {
     "allow": [
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8000/login/)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8000/api/users/check-email/)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8000/api/users/check-email/)",
+      "Bash(python3 -c ' *)",
+      "Bash(/Users/batu/Desktop/CPSC-491-Meal-Mate/venv/bin/pip list *)",
+      "Bash(python3 -m pip list)",
+      "Bash(curl -s http://127.0.0.1:8000/login/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://127.0.0.1:8000/assets/dist/js/bootstrap.bundle.min.js\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://127.0.0.1:8000/assets/dist/css/bootstrap.min.css\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://127.0.0.1:8000/assets/login.css\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://127.0.0.1:8000/assets/js/color-modes.js\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://127.0.0.1:8000/notifications.js\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://127.0.0.1:8000/assets/notifications.js\")",
+      "Bash(/Library/Frameworks/Python.framework/Versions/3.12/bin/python3 test_jwt.py)"
     ]
   }
 }

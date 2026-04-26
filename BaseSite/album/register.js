@@ -92,12 +92,10 @@ registerUsername?.addEventListener("input", () => {
     setAvailabilityUI(usernameAvailability, usernameMessage, registerUsername,
       "⏳", "#666", "Checking…", null);
     try {
-      const res = await fetch("/api/users/check-username/", {
+      const data = await apiFetch("/api/users/check-username/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username }),
       });
-      const data = await res.json();
       if (data.available) {
         setAvailabilityUI(usernameAvailability, usernameMessage, registerUsername,
           "✓", "#388e3c", "Username is available", true);
@@ -132,12 +130,10 @@ registerEmail?.addEventListener("input", () => {
     setAvailabilityUI(emailAvailability, emailMessage, registerEmail,
       "⏳", "#666", "Checking…", null);
     try {
-      const res = await fetch("/api/users/check-email/", {
+      const data = await apiFetch("/api/users/check-email/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-      const data = await res.json();
       if (data.available) {
         setAvailabilityUI(emailAvailability, emailMessage, registerEmail,
           "✓", "#388e3c", "Email is available", true);
@@ -163,6 +159,7 @@ const FIELD_INPUTS = {
   last_name: document.getElementById("registerLastName"),
   phone_number: document.getElementById("registerPhone"),
   role: document.getElementById("registerRole"),
+  terms_accepted: document.getElementById("termsCheckbox"),
 };
 
 function showFieldErrors(errorData) {
@@ -193,18 +190,21 @@ function setRegisterMessage(message, type) {
 // ─── Availability pre-check helper ───────────────────────────────────────────
 
 async function checkAvailability(endpoint, payload) {
-  const res = await fetch(endpoint, {
+  return await apiFetch(endpoint, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  return res.json();
 }
 
 // ─── Form submission ──────────────────────────────────────────────────────────
 
 registerForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
+  
+  if (registerSubmitButton.disabled) return;
+  registerSubmitButton.disabled = true;
+  registerSubmitButton.textContent = "Checking…";
+  
   registerMessage.className = "alert d-none";
 
   const username = registerUsername.value.trim().toLowerCase();
@@ -215,12 +215,24 @@ registerForm?.addEventListener("submit", async (event) => {
   if (!registerForm.checkValidity()) {
     registerForm.classList.add("was-validated");
     setRegisterMessage("Please complete all required fields.", "danger");
+    registerSubmitButton.disabled = false;
+    registerSubmitButton.textContent = "Create Account";
     return;
   }
 
   if (password !== confirmPassword) {
     registerForm.classList.add("was-validated");
     setRegisterMessage("Passwords do not match.", "danger");
+    registerSubmitButton.disabled = false;
+    registerSubmitButton.textContent = "Create Account";
+    return;
+  }
+
+  if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+    registerForm.classList.add("was-validated");
+    setRegisterMessage("Password must contain at least one uppercase letter, one lowercase letter, and one number.", "danger");
+    registerSubmitButton.disabled = false;
+    registerSubmitButton.textContent = "Create Account";
     return;
   }
 
@@ -235,21 +247,26 @@ registerForm?.addEventListener("submit", async (event) => {
       setAvailabilityUI(usernameAvailability, usernameMessage, registerUsername,
         "✗", "#d32f2f", usernameResult.message || "Username is already taken", false);
       setRegisterMessage(usernameResult.message || "That username is already taken.", "danger");
+      registerSubmitButton.disabled = false;
+      registerSubmitButton.textContent = "Create Account";
       return;
     }
     if (!emailResult.available) {
       setAvailabilityUI(emailAvailability, emailMessage, registerEmail,
         "✗", "#d32f2f", emailResult.message || "Email is already registered", false);
       setRegisterMessage(emailResult.message || "An account with that email already exists.", "danger");
+      registerSubmitButton.disabled = false;
+      registerSubmitButton.textContent = "Create Account";
       return;
     }
   } catch {
     setRegisterMessage("Could not verify your details. Please try again.", "danger");
+    registerSubmitButton.disabled = false;
+    registerSubmitButton.textContent = "Create Account";
     return;
   }
 
   registerForm.classList.add("was-validated");
-  registerSubmitButton.disabled = true;
   registerSubmitButton.textContent = "Creating Account…";
 
   try {
@@ -280,11 +297,25 @@ registerForm?.addEventListener("submit", async (event) => {
       window.location.href = "/";
     }, 1500);
   } catch (error) {
+    console.error("Registration failed:", error);
     // apiFetch throws with extra fields from the error body attached
-    if (error.non_field_errors || Object.keys(error).some(k => k in FIELD_INPUTS)) {
+    const fieldKeys = Object.keys(FIELD_INPUTS);
+    const hasFieldErrors = error.non_field_errors || Object.keys(error).some(k => fieldKeys.includes(k));
+    if (hasFieldErrors) {
       showFieldErrors(error);
     } else {
-      setRegisterMessage(error.message || "Unable to create your account.", "danger");
+      // If we have a generic error message in the error object (from apiFetch)
+      let msg = error.message;
+      
+      // If error.message is just "Error: 400", try to find something better in the assigned properties
+      if (msg === "Error: 400" || msg === "400") {
+        const otherKeys = Object.keys(error).filter(k => k !== "message" && k !== "stack");
+        if (otherKeys.length > 0) {
+          msg = otherKeys.map(k => `${k}: ${error[k]}`).join(" | ");
+        }
+      }
+      
+      setRegisterMessage(msg || "Unable to create your account.", "danger");
     }
   } finally {
     registerSubmitButton.disabled = false;

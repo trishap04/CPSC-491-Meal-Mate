@@ -40,24 +40,10 @@ forgotPasswordForm?.addEventListener("submit", async (event) => {
   const email = document.getElementById("resetEmail").value.trim();
 
   try {
-    const response = await fetch(forgotPasswordEndpoint, {
+    const data = await apiFetch(forgotPasswordEndpoint, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({ email }),
     });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      const errors = Object.values(data).flat().join(" ");
-      setForgotPasswordMessage(
-        errors || "Unable to create reset link. Please check your email and try again.",
-        "danger"
-      );
-      return;
-    }
 
     setForgotPasswordMessage(
       "Reset link generated! Check the instructions below.",

@@ -182,28 +182,14 @@ resetPasswordForm?.addEventListener("submit", async (event) => {
   resetPasswordSubmitButton.textContent = "Updating password...";
 
   try {
-    const response = await fetch(resetPasswordEndpoint, {
+    const data = await apiFetch(resetPasswordEndpoint, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({
         uid,
         token,
         new_password: newPassword,
       }),
     });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      const errors = Object.values(data).flat().join(" ");
-      setResetPasswordMessage(
-        errors || "Unable to reset your password. Please try again or request a new reset link.",
-        "danger"
-      );
-      return;
-    }
 
     setResetPasswordMessage(
       "Your password has been updated successfully! Redirecting to login...",
@@ -220,7 +206,7 @@ resetPasswordForm?.addEventListener("submit", async (event) => {
     });
 
     setTimeout(() => {
-      window.location.href = "login.html";
+      window.location.href = "/login/";
     }, 2000);
   } catch (error) {
     setResetPasswordMessage(
