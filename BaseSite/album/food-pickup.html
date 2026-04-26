@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -6,7 +6,7 @@
     type="image/x-icon" />
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meal Mate — Pick Up Donated Goods</title>
+  <title>Meal Mate â€” Pick Up Donated Goods</title>
   <link
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;700&display=swap"
     rel="stylesheet">
@@ -802,14 +802,14 @@
 
   <div class="hero-bar" id="heroBanner">
     <a href="#listContainer" style="color: inherit; text-decoration: none; cursor: pointer;">
-      📦 New drop-offs available near you — <strong style="text-decoration: underline;">find goods to pick up today</strong>
+      ðŸ“¦ New drop-offs available near you â€” <strong style="text-decoration: underline;">find goods to pick up today</strong>
     </a>
-    <span class="hero-close" onclick="document.getElementById('heroBanner').style.display='none'">✕</span>
+    <span class="hero-close" onclick="document.getElementById('heroBanner').style.display='none'">âœ•</span>
   </div>
   <nav style="background: var(--navy); padding: 10px 20px; display: flex; align-items: center;">
-    <a href="index.html"
+    <a href="/index.html"
       style="color: var(--yellow); text-decoration: none; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 6px;">
-      ← Back
+      â† Back
     </a>
   </nav>
   <main>
@@ -832,7 +832,7 @@
   <!-- Modal -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <button class="modal-close" onclick="closeModal()">âœ•</button>
       <div id="modalContent">
         <h3 id="modalTitle">Reserve Pickup</h3>
         <p class="modal-location" id="modalLocation"></p>
@@ -843,11 +843,11 @@
         <div class="modal-section">
           <label>Pickup Time</label>
           <select id="pickupTime">
-            <option>Today — Morning (8am–12pm)</option>
-            <option>Today — Afternoon (12pm–5pm)</option>
-            <option>Today — Evening (5pm–8pm)</option>
-            <option>Tomorrow — Morning (8am–12pm)</option>
-            <option>Tomorrow — Afternoon (12pm–5pm)</option>
+            <option>Today â€” Morning (8amâ€“12pm)</option>
+            <option>Today â€” Afternoon (12pmâ€“5pm)</option>
+            <option>Today â€” Evening (5pmâ€“8pm)</option>
+            <option>Tomorrow â€” Morning (8amâ€“12pm)</option>
+            <option>Tomorrow â€” Afternoon (12pmâ€“5pm)</option>
           </select>
         </div>
         <div class="modal-section">
@@ -857,7 +857,7 @@
         <button class="modal-confirm-btn" onclick="confirmPickup()">Confirm Reservation</button>
       </div>
       <div class="success-msg" id="successMsg">
-        <span class="success-icon">✅</span>
+        <span class="success-icon">âœ…</span>
         <h4>You're confirmed!</h4>
         <p>Your pickup reservation has been submitted. You'll receive a confirmation shortly.</p>
       </div>
@@ -892,7 +892,7 @@
         lat: 34.044, lng: -118.228,
         items: ["Dry Goods", "Canned Foods", "Baby Items", "Hygiene"],
         partner: "City of LA",
-        time: "Mon–Sat, 9am–4pm"
+        time: "Monâ€“Sat, 9amâ€“4pm"
       },
       {
         id: 4, type: 'donation',
@@ -910,7 +910,7 @@
         lat: 34.068, lng: -118.238,
         items: ["Frozen Meals", "Fresh Dairy", "Produce", "Snacks"],
         partner: "Second Harvest",
-        time: "Tue–Sun, 10am–6pm"
+        time: "Tueâ€“Sun, 10amâ€“6pm"
       },
       {
         id: 6, type: 'donation',
@@ -919,7 +919,7 @@
         lat: 34.038, lng: -118.256,
         items: ["Zucchini", "Eggs", "Jam", "Herbs"],
         donor: "Sunridge Farms",
-        time: "Today only — first come, first served"
+        time: "Today only â€” first come, first served"
       },
       {
         id: 7, type: 'foodbank',
@@ -928,7 +928,7 @@
         lat: 34.047, lng: -118.215,
         items: ["Grains", "Legumes", "Oil", "Spices"],
         partner: "Feeding America",
-        time: "Mon, Wed, Fri — 8am–2pm"
+        time: "Mon, Wed, Fri â€” 8amâ€“2pm"
       },
       {
         id: 8, type: 'donation',
@@ -937,7 +937,7 @@
         lat: 34.055, lng: -118.249,
         items: ["Sandwiches", "Salads", "Fruit Cups", "Drinks"],
         donor: "Apex Corp Catering",
-        time: "Available today 3pm–7pm"
+        time: "Available today 3pmâ€“7pm"
       }
     ];
 
@@ -986,7 +986,7 @@
 
     function makeIcon(type, active = false) {
       const color = type === 'donation' ? (active ? '#1B2340' : '#2d3a6b') : (active ? '#0f1628' : '#3d4e8a');
-      const emoji = type === 'donation' ? '📦' : '🏛️';
+      const emoji = type === 'donation' ? 'ðŸ“¦' : 'ðŸ›ï¸';
       return L.divIcon({
         className: '',
         html: `<div style="
@@ -1045,7 +1045,7 @@
       if (donations.length) {
         const label = document.createElement('div');
         label.className = 'section-label';
-        label.textContent = '🤝 Community Donations';
+        label.textContent = 'ðŸ¤ Community Donations';
         container.appendChild(label);
         donations.forEach((loc, i) => container.appendChild(makeCard(loc, i)));
       }
@@ -1053,7 +1053,7 @@
       if (foodbanks.length) {
         const label = document.createElement('div');
         label.className = 'section-label';
-        label.textContent = '🏛️ Partner Food Banks';
+        label.textContent = 'ðŸ›ï¸ Partner Food Banks';
         container.appendChild(label);
         foodbanks.forEach((loc, i) => container.appendChild(makeCard(loc, i + donations.length)));
       }
@@ -1070,12 +1070,12 @@
       <div class="card-name">${loc.name}</div>
       <span class="card-badge ${loc.type}">${loc.type === 'donation' ? 'Donation' : 'Food Bank'}</span>
     </div>
-    <div class="card-location">📍 ${loc.address}</div>
+    <div class="card-location">ðŸ“ ${loc.address}</div>
     <div class="card-items">${loc.items.map(i => `<span class="item-tag">${i}</span>`).join('')}</div>
     <div class="card-footer">
       <div>
-        <div class="card-time">🕐 ${loc.time}</div>
-        ${loc.type === 'foodbank' ? `<div class="partner-tag">🤝 Partner: ${loc.partner}</div>` : `<div class="card-time" style="color:#2d3a6b">👤 ${loc.donor}</div>`}
+        <div class="card-time">ðŸ• ${loc.time}</div>
+        ${loc.type === 'foodbank' ? `<div class="partner-tag">ðŸ¤ Partner: ${loc.partner}</div>` : `<div class="card-time" style="color:#2d3a6b">ðŸ‘¤ ${loc.donor}</div>`}
       </div>
       <button class="pickup-btn" onclick="openModal(${loc.id}, event)">Reserve Pickup</button>
     </div>
@@ -1112,8 +1112,8 @@
     function openModal(id, e) {
       e.stopPropagation();
       selectedLocation = locations.find(l => l.id === id);
-      document.getElementById('modalTitle').textContent = `Reserve Pickup — ${selectedLocation.name}`;
-      document.getElementById('modalLocation').textContent = `📍 ${selectedLocation.address}`;
+      document.getElementById('modalTitle').textContent = `Reserve Pickup â€” ${selectedLocation.name}`;
+      document.getElementById('modalLocation').textContent = `ðŸ“ ${selectedLocation.address}`;
       document.getElementById('pickupItems').value = selectedLocation.items.slice(0, 2).join(', ');
       document.getElementById('modalContent').style.display = '';
       document.getElementById('successMsg').style.display = 'none';
