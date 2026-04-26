@@ -495,22 +495,23 @@ async function submitDonation(donationData) {
     }
     
     const result = await response.json();
-    console.log('Donation created:', result);
-    
+    const donation = result.donation || result;
+    console.log('Donation created:', donation);
+
     // Save full donation data to session for confirmation page
-    sessionStorage.setItem('lastDonationId', result.id);
-    sessionStorage.setItem('lastDonationData', JSON.stringify(result));
+    sessionStorage.setItem('lastDonationId', donation.id);
+    sessionStorage.setItem('lastDonationData', JSON.stringify(donation));
 
     addNotification(
       "Donation Submitted",
-      `Donation #${String(result.id).padStart(5, "0")} was submitted successfully.`,
+      `Donation #${String(donation.id).padStart(5, "0")} was submitted successfully.`,
       "success"
     );
-    
+
     // Show success toast
-    showSuccessToast(`✓ Donation #${String(result.id).padStart(5, '0')} submitted successfully!`, () => {
+    showSuccessToast(`✓ Donation #${String(donation.id).padStart(5, '0')} submitted successfully!`, () => {
       // Redirect to confirmation page after toast
-      window.location.href = 'donation-confirmation.html?id=' + result.id;
+      window.location.href = '/donation-confirmation/?id=' + donation.id;
     });
     
   } catch (error) {

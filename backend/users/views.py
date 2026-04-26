@@ -429,6 +429,8 @@ class UpdateUserProfileView(APIView):
 
 class FoodCategoryView(APIView):
     """API to get all food categories"""
+    permission_classes = [AllowAny]
+
     def get(self, request):
         categories = FoodCategory.objects.all()
         serializer = FoodCategorySerializer(categories, many=True)
@@ -437,6 +439,8 @@ class FoodCategoryView(APIView):
 
 class FoodSearchView(APIView):
     """API to search foods by name and optionally filter by category"""
+    permission_classes = [AllowAny]
+
     def get(self, request):
         query = request.query_params.get('q', '').strip()
         category = request.query_params.get('category', '').strip()
@@ -459,6 +463,8 @@ class FoodSearchView(APIView):
 
 class FoodListView(APIView):
     """API to get all foods, optionally filtered by category"""
+    permission_classes = [AllowAny]
+
     def get(self, request):
         category = request.query_params.get('category', '').strip()
         
