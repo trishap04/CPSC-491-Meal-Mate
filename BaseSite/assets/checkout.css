@@ -1,0 +1,360 @@
+.container {
+  max-width: 960px;
+}
+
+/* Donation Cart Styles */
+#categoryButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#categoryButtons button {
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+#categoryButtons button:hover {
+  transform: translateY(-2px);
+}
+
+#foodList {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  background-color: #fff;
+}
+
+#foodList li {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s ease;
+}
+
+#foodList li:hover {
+  background-color: #f8f9fa;
+}
+
+#foodList li:last-child {
+  border-bottom: none;
+}
+
+#foodSearch {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+}
+
+#foodSearch:focus {
+  border-color: #712cf9;
+  box-shadow: 0 0 0 0.2rem rgba(113, 44, 249, 0.25);
+}
+
+#cartItems {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+}
+
+#cartItems li {
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
+  background-color: #fff;
+  transition: background-color 0.2s ease;
+}
+
+#cartItems li:hover {
+  background-color: #f8f9fa;
+}
+
+#cartItems li:last-child {
+  border-bottom: none;
+}
+
+#cartItems .btn-danger {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+}
+
+#cartItems .btn-success {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+}
+
+.badge {
+  font-size: 0.875rem;
+  padding: 4px 8px;
+}
+
+/* Cart item quantity and unit controls */
+#cartItems .form-control-sm,
+#cartItems .form-select-sm {
+  font-size: 0.8rem;
+  padding: 4px 6px;
+  transition: all 0.2s ease;
+}
+
+#cartItems .form-control-sm:focus,
+#cartItems .form-select-sm:focus {
+  border-color: #712cf9;
+  box-shadow: 0 0 0 0.2rem rgba(113, 44, 249, 0.15);
+}
+
+#cartItems .form-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 4px !important;
+}
+
+#cartItems input[type="number"] {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-weight: 600;
+}
+
+#cartItems input[type="number"]:hover {
+  background-color: #f8f9fa;
+  border-color: #712cf9;
+}
+
+#cartItems select {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+
+#cartItems select:hover {
+  border-color: #712cf9;
+}
+
+/* Quantity and unit badge */
+#cartItems .badge {
+  font-size: 0.9rem;
+  padding: 6px 10px;
+  font-weight: 600;
+  background-color: #e7f3ff !important;
+  color: #004085 !important;
+  border: 1px solid #b3d9f2;
+  border-radius: 4px;
+}
+
+/* Remove button styling */
+#cartItems .btn-danger {
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+#cartItems .btn-danger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+/* Cart item container */
+#cartItems li {
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
+  background-color: #fff;
+  transition: all 0.2s ease;
+}
+
+#cartItems li:hover {
+  background-color: #f8f9fa;
+  border-left: 3px solid #712cf9;
+  padding-left: calc(12px - 3px);
+}
+
+#cartItems li:last-child {
+  border-bottom: none;
+}
+
+/* Edit instructions */
+#cartItems .edit-hint {
+  font-size: 0.75rem;
+  color: #6c757d;
+  font-style: italic;
+  margin-top: 4px;
+}
+
+/* Modal styling */
+.modal-body .alert-info {
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+  color: #0c5460;
+  border-radius: 4px;
+}
+
+/* Donation Summary Card Styling */
+.card.bg-light {
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.card-header.bg-primary {
+  background-color: #712cf9 !important;
+  padding: 15px;
+  border-bottom: 2px solid #5a23c8;
+}
+
+.card-header.bg-primary h5 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+#donationSummary .list-group-flush .list-group-item {
+  border-color: #dee2e6;
+  background-color: #fff;
+  padding: 10px 0;
+}
+
+#donationSummary .list-group-flush .list-group-item:not(:last-child) {
+  border-bottom: 1px solid #dee2e6;
+}
+
+#donationSummary .list-group-flush .list-group-item strong {
+  color: #212529;
+  display: block;
+  margin-bottom: 4px;
+}
+
+#donationSummary .list-group-flush .list-group-item small {
+  color: #6c757d;
+  font-weight: 500;
+}
+
+#donationSummary .card-body {
+  padding: 20px;
+}
+
+#donationSummary .card-subtitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #495057 !important;
+}
+
+#donationSummary .row {
+  gap: 15px;
+}
+
+#donationSummary .col-md-6 {
+  padding: 0;
+}
+
+#donationSummary .col-md-6 small {
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  display: block;
+  margin-bottom: 4px;
+}
+
+#donationSummary .col-md-6 p {
+  color: #212529;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+/* Form input styling */
+input[type="number"] {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 4px 8px;
+}
+
+/* Submit button states */
+button[type="submit"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+button[type="submit"]:disabled:hover {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+/* Toast notifications */
+.toast-container {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translate(-50%, -100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+.toast {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  min-width: 350px;
+}
+
+.toast.text-bg-success {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+}
+
+.toast.text-bg-danger {
+  background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%) !important;
+}
+
+.toast.text-bg-info {
+  background: linear-gradient(135deg, #17a2b8 0%, #00bcd4 100%) !important;
+}
+
+.toast.text-bg-warning {
+  background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%) !important;
+  color: white !important;
+}
+
+.toast.text-bg-warning .btn-close {
+  filter: invert(1);
+}
+
+@media (max-width: 576px) {
+  .toast {
+    min-width: 100%;
+    width: calc(100% - 28px);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .container {
+    max-width: 100%;
+    padding: 0 15px;
+  }
+  
+  #categoryButtons {
+    margin-bottom: 10px;
+  }
+  
+  #categoryButtons button {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
+  
+  #cartItems .row {
+    flex-direction: column;
+  }
+  
+  #cartItems .col-auto {
+    width: 100% !important;
+    margin-bottom: 8px;
+  }
+  
+  #cartItems .form-control-sm,
+  #cartItems .form-select-sm {
+    width: 100% !important;
+  }
+}
