@@ -479,6 +479,7 @@ class FoodListView(APIView):
 @method_decorator(csrf_exempt, name='dispatch')
 class DonationCreateView(APIView):
     """API to create a new donation with items"""
+    permission_classes = [AllowAny]
     def post(self, request):
         try:
             serializer = DonationCreateSerializer(data=request.data)
@@ -503,14 +504,21 @@ class DonationCreateView(APIView):
 
         except ValidationError as exc:
             return Response(
-                {'error': exc.detail},
+                {
+                    'message': 'Validation failed.',
+                    'errors': exc.detail
+                },
                 status=status.HTTP_400_BAD_REQUEST,
-            )
+    )
+
         except Exception as e:
             return Response(
-                {'error': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+                 {
+                    'message': 'Failed to process donation.',
+                    'error': str(e)
+        },
+        status=status.HTTP_400_BAD_REQUEST
+    )
 
 
 @method_decorator(csrf_exempt, name='dispatch')
