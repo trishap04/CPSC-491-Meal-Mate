@@ -26,6 +26,8 @@ from .serializers import (
 from .models import Food, FoodCategory, Donation, DonationItem, UserProfile
 from django.db.models import Q
 from django.db import transaction
+import logging
+logger = logging.getLogger(__name__)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -492,6 +494,7 @@ class DonationCreateView(APIView):
                 if request.user.is_authenticated:
                     save_kwargs['user'] = request.user
                 donation = serializer.save(**save_kwargs)
+                logger.info(f"Donation created: ID={donation.id}, user={request.user}")
 
             serializer = DonationSerializer(donation)
             return Response(
@@ -504,6 +507,7 @@ class DonationCreateView(APIView):
     )
 
         except ValidationError as exc:
+            logger.warning(f"Validation failed: {exc.detail}")
             return Response(
                 {
                     'message': 'Validation failed.',
@@ -513,6 +517,7 @@ class DonationCreateView(APIView):
     )
 
         except Exception as e:
+            logger.error(f"Unexpected error creating donation: {str(e)}")
             return Response(
                  {
                     'message': 'Failed to process donation.',
@@ -541,5 +546,44 @@ class DonationDetailView(APIView):
         except Donation.DoesNotExist:
             return Response(
                 {'error': 'Donation not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+@method_decorator(csrf_exempt, name='dispatch')
+class DonationConfirmView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request, donation_id):
+        try:
+            donation = Donation.objects.get(id=donation_id)
+            confirm_type = request.data.get('confirm_type')
+
+            if confirm_type == 'donor':
+                donation.donor_confirmed = True
+            elif confirm_type == 'receiver':
+                donation.receiver_confirmed = True
+            else:
+                return Response(
+                    {'message': 'confirm_type must be donor or receiver.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            donation.update_completion_status()
+
+            return Response(
+                {
+                    'message': 'Drop-off confirmation saved.',
+                    'donation_id': donation.id,
+                    'status': donation.status,
+                    'donor_confirmed': donation.donor_confirmed,
+                    'receiver_confirmed': donation.receiver_confirmed,
+                    'completed_at': donation.completed_at,
+                },
+                status=status.HTTP_200_OK
+            )
+
+        except Donation.DoesNotExist:
+            return Response(
+                {'message': 'Donation not found.'},
                 status=status.HTTP_404_NOT_FOUND
             )

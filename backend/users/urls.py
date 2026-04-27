@@ -16,7 +16,8 @@ from .views import (
     FoodSearchView,
     FoodListView,
     DonationCreateView,
-    DonationDetailView
+    DonationDetailView,
+    DonationConfirmView
 )
 
 urlpatterns = [
@@ -36,6 +37,7 @@ urlpatterns = [
     path('api/foods/', FoodListView.as_view(), name='food-list'),
     path('api/donations/', DonationCreateView.as_view(), name='donation-create'),
     path('donations/', DonationCreateView.as_view(), name='donation-submit'),
+    path('donations/<int:donation_id>/confirm/', DonationConfirmView.as_view(), name='donation-confirm'),
     path('api/donations/<int:donation_id>/', DonationDetailView.as_view(), name='donation-detail'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
