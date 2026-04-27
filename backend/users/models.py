@@ -153,7 +153,36 @@ class Donation(models.Model):
         ('meet', 'Meet at door'),
         ('leave', 'Leave at door'),
     ]
-    
+
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='donations')
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+    address = models.TextField()
+    pickup_date = models.DateField()
+    pickup_time = models.CharField(max_length=50)
+    door_preference = models.CharField(max_length=10, choices=PICKUP_PREFERENCE_CHOICES)
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, default='pending')
+
+    def __str__(self):
+        return f"Donation from {self.first_name} {self.last_name} on {self.pickup_date}"
+
+
+class DonationItem(models.Model):
+    """Individual food items in a donation"""
+    donation = models.ForeignKey(Donation, on_delete=models.CASCADE, related_name='items')
+    food = models.ForeignKey(Food, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    unit = models.CharField(max_length=50, default='items')
+
+    def __str__(self):
+        return f"{self.quantity} {self.unit} of {self.food.name}"
+
+
+
     # Ownership (PII Minimization: link to user instead of storing duplicate info)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='donations')
     
@@ -167,7 +196,6 @@ class Donation(models.Model):
     # Donation details
     pickup_date = models.DateField()
     pickup_time = models.CharField(max_length=50)
-    door_preference = models.CharField(max_length=10, choices=PICKUP_PREFERENCE_CHOICES)
     
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
@@ -187,3 +215,4 @@ class DonationItem(models.Model):
     
     def __str__(self):
         return f"{self.quantity} {self.unit} of {self.food.name}"
+    
