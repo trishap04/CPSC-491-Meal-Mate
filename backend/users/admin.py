@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from .models import UserProfile, FoodCategory, Food, Donation, DonationItem
+from django.utils import timezone
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
@@ -72,6 +73,17 @@ class DonationAdmin(admin.ModelAdmin):
             's' if count != 1 else ''
         )
     item_count.short_description = 'Items'
+
+    def save_model(self, request, obj, form, change):
+        if obj.donor_confirmed and obj.receiver_confirmed:
+            obj.status = 'completed'
+            obj.completed_at = timezone.now()
+        elif obj.donor_confirmed or obj.receiver_confirmed:
+            obj.status = 'in_progress'
+        else:
+            obj.status = 'pending'
+
+        super().save_model(request, obj, form, change)
     
     def donation_summary(self, obj):
         items = obj.items.all()
