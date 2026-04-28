@@ -6,7 +6,7 @@ let donationDirectory = [];
 let userMarker = null;
 let siteMarkers = [];
 
-const csvFile = "Food Banks, Pantries and Soup Kitchens (Proximity).csv";
+const csvFile = "/assets/Food%20Banks,%20Pantries%20and%20Soup%20Kitchens%20(Proximity).csv";
 
 
 const map = L.map("map").setView([33.8704, -117.9243], 10);
