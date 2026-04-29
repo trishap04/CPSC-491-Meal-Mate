@@ -144,3 +144,24 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+function toggleNotificationMenu(event) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const menu = document.getElementById("notificationMenu");
+  if (!menu) return;
+
+  menu.classList.toggle("show");
+
+  markAllNotificationsRead();
+}
+
+document.addEventListener("click", function(event) {
+  const wrapper = document.querySelector(".notification-wrapper");
+
+  if (wrapper && !wrapper.contains(event.target)) {
+    const menu = document.getElementById("notificationMenu");
+    if (menu) menu.classList.remove("show");
+  }
+});
